@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Pase Invisible - Stream 8M</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        @keyframes pulse-fast {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-fast { animation: pulse-fast 0.3s ease-in-out; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-enter { animation: slideInUp 0.5s ease-out forwards; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Indicador de conexión */
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px;
+        }
+        .status-online { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+        .status-offline { background-color: #ef4444; }
+    </style>
+</head>
+<body class="bg-stone-100 min-h-screen text-stone-800 flex flex-col">
+
+    <!-- Header del Evento -->
+    <header class="bg-purple-900 text-white shadow-xl relative z-20">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">⚽</span>
+                <div>
+                    <h1 class="text-2xl font-black uppercase tracking-wider text-purple-100">Copa 8M</h1>
+                    <p class="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Salud Mental en Juego</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="bg-purple-950/50 px-3 py-1.5 rounded-full flex items-center text-xs font-bold tracking-wide border border-purple-800">
+                    <span id="conexion-dot" class="status-dot status-offline animate-pulse"></span>
+                    <span id="conexion-texto" class="text-purple-200">Conectando...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
+        
+        <!-- ZONA DE USUARIO -->
+        <section class="lg:col-span-5 bg-white p-6 md:p-10 shadow-[20px_0_30px_-15px_rgba(0,0,0,0.1)] relative z-10 overflow-y-auto">
+            <div class="max-w-md mx-auto">
+                <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold tracking-wide uppercase mb-4">En Vivo</span>
+                <h2 class="text-4xl font-black text-stone-900 leading-tight mb-2">El Pase <br><span class="text-purple-700">Invisible</span></h2>
+                <p class="text-stone-500 text-sm mb-8">
+                    En el fútbol, la asistencia vale tanto como el gol. En la vida, las redes de apoyo nos sostienen. <strong class="text-stone-800">Sacate una selfie y mandale un "pase" de agradecimiento a esa mujer que siempre te banca.</strong> Todo el estadio lo verá en la pantalla.
+                </p>
+
+                <form id="pase-form" class="space-y-5">
+                    
+                    <!-- FOTO UPLOAD -->
+                    <div class="bg-stone-50 p-4 rounded-2xl border-2 border-dashed border-stone-300 text-center relative transition-colors hover:border-purple-400 group" id="foto-container">
+                        <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        
+                        <div id="foto-placeholder" class="py-4 pointer-events-none">
+                            <span class="text-4xl block mb-2">📸</span>
+                            <span class="block text-sm font-bold text-stone-700">Toca para sacarte una selfie</span>
+                            <span class="block text-xs text-stone-500 mt-1">(La imagen se comprimirá automáticamente)</span>
+                        </div>
+                        
+                        <div id="foto-preview-container" class="hidden relative w-full aspect-square max-h-64 rounded-xl overflow-hidden shadow-inner">
+                            <img id="foto-preview" src="" alt="Tu selfie" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-white font-bold text-sm bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Toca para cambiar foto</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATOS -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">De (Vos):</label>
+                            <input type="text" id="sender" placeholder="Tu nombre" required class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Para:</label>
+                            <input type="text" id="receiver" placeholder="Quién te banca" required class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Mensaje (Opcional):</label>
+                        <textarea id="mensaje" rows="2" placeholder="Ej: Gracias por escucharme siempre..." class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-enviar" disabled class="w-full relative group overflow-hidden rounded-2xl shadow-md transition-all active:scale-[0.98] opacity-50 cursor-not-allowed">
+                        <div id="btn-bg" class="absolute inset-0 w-full h-full bg-stone-400 transition-colors"></div>
+                        <div class="relative px-6 py-5 flex items-center justify-center gap-3">
+                            <span id="btn-texto" class="text-white font-black text-xl tracking-wide uppercase">Conectando...</span>
+                            <span class="text-2xl">⏳</span>
+                        </div>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ZONA DE STREAM -->
+        <section class="lg:col-span-7 bg-stone-200/50 p-6 md:p-10 flex flex-col h-full lg:h-[calc(100vh-80px)]">
+            
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 flex items-center justify-between mb-8 shrink-0 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-5 text-9xl">⚽</div>
+                <div class="relative z-10">
+                    <h3 class="text-stone-500 font-bold uppercase tracking-wider text-sm">Contador Oficial</h3>
+                    <p class="text-stone-900 font-black text-xl">Asistencias Emocionales</p>
+                </div>
+                <div class="relative z-10 bg-purple-900 text-white px-6 py-2 rounded-2xl flex items-baseline gap-1 shadow-inner">
+                    <span id="contador-numero" class="text-5xl font-black tabular-nums transition-transform duration-300 inline-block">0</span>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto no-scrollbar relative">
+                <div class="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-stone-100 to-transparent z-10 pointer-events-none"></div>
+                
+                <div id="feed-pases" class="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-20">
+                    <!-- Tarjetas inyectadas dinámicamente -->
+                </div>
+                
+                <div id="feed-vacio" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 text-center px-4">
+                    <span class="text-6xl mb-4 grayscale opacity-50">🏟️</span>
+                    <p class="font-bold text-lg text-stone-600">El estadio está en silencio...</p>
+                    <p class="text-sm">Sé la primera persona en mandar una asistencia.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración de entorno y Modo Inteligente
+        let isFirebaseAvailable = typeof __firebase_config !== 'undefined';
+        let firebaseConfig = {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
+
+        let app, auth, db;
+        let currentUser = null;
+        let isConnected = false;
+        let pasesGlobales = [];
+        let imageDataUrl = null;
+        let modoLocal = false;
+
+        // Elementos UI
+        const dotConexion = document.getElementById('conexion-dot');
+        const textoConexion = document.getElementById('conexion-texto');
+        const btnEnviar = document.getElementById('btn-enviar');
+        const btnBg = document.getElementById('btn-bg');
+        const btnTexto = document.getElementById('btn-texto');
+
+        // Función para cambiar estado UI
+        function setConnectedUI(connected, isLocal = false) {
+            isConnected = connected;
+            if (connected) {
+                dotConexion.classList.replace('status-offline', 'status-online');
+                textoConexion.textContent = isLocal ? "Modo Local" : "Sincronizado";
+                if(isLocal) {
+                    dotConexion.style.backgroundColor = '#f59e0b'; // Naranja para local
+                    dotConexion.style.boxShadow = '0 0 8px #f59e0b';
+                }
+                
+                btnEnviar.disabled = false;
+                btnEnviar.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
+                btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
+            }
+        }
+
+        // Inicialización estricta de la aplicación
+        async function initApp() {
+            if (isFirebaseAvailable) {
+                try {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    // REGLA ESTRICTA: Autenticar SIEMPRE antes de hacer cualquier otra cosa
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser = user;
+                        if (user) {
+                            setConnectedUI(true, false);
+                            iniciarEscuchaTiempoReal();
+                        } else {
+                            iniciarModoLocal();
+                        }
+                    });
+                } catch(e) { 
+                    console.error("Error iniciando Firebase, pasando a Modo Local:", e);
+                    iniciarModoLocal();
+                }
+            } else {
+                iniciarModoLocal();
+            }
+        }
+
+        // Ejecutar inicialización
+        initApp();
+
+        function iniciarModoLocal() {
+            modoLocal = true;
+            console.warn("Ejecutando en modo local. No hay sincronización en la nube real-time externa.");
+            pasesGlobales = JSON.parse(localStorage.getItem('pases8M_v2')) || [];
+            setConnectedUI(true, true);
+            renderizarFeed();
+        }
+
+        // Sincronizar entre diferentes pestañas en Modo Local (Ideal para pruebas locales)
+        window.addEventListener('storage', (e) => {
+            if (modoLocal && e.key === 'pases8M_v2') {
+                pasesGlobales = JSON.parse(e.newValue) || [];
+                renderizarFeed();
+            }
+        });
+
+        // Leer datos en Tiempo Real (Nube)
+        function iniciarEscuchaTiempoReal() {
+            if (!currentUser || !db) return;
+            const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
+            
+            onSnapshot(pasesRef, (snapshot) => {
+                pasesGlobales = [];
+                snapshot.forEach(doc => {
+                    pasesGlobales.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar en memoria (los más nuevos primero)
+                pasesGlobales.sort((a, b) => b.timestamp - a.timestamp);
+                renderizarFeed();
+            }, (error) => {
+                console.error("Error al escuchar actualizaciones de la base de datos:", error);
+            });
+        }
+
+        // RENDERIZAR FEED
+        const contadorElement = document.getElementById('contador-numero');
+        const feedContainer = document.getElementById('feed-pases');
+        const feedVacio = document.getElementById('feed-vacio');
+
+        function renderizarFeed() {
+            contadorElement.textContent = pasesGlobales.length;
+            
+            contadorElement.classList.remove('animate-pulse-fast');
+            void contadorElement.offsetWidth;
+            contadorElement.classList.add('animate-pulse-fast');
+
+            if (pasesGlobales.length === 0) {
+                feedVacio.style.display = 'flex';
+                feedContainer.innerHTML = '';
+            } else {
+                feedVacio.style.display = 'none';
+                feedContainer.innerHTML = '';
+                
+                const pasesMostrar = pasesGlobales.slice(0, 50);
+                
+                pasesMostrar.forEach(pase => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white rounded-2xl overflow-hidden shadow-md border border-stone-200 card-enter flex flex-col';
+                    
+                    if (pase.imagen) {
+                        const imgContainer = document.createElement('div');
+                        imgContainer.className = 'w-full aspect-[4/3] bg-stone-100 relative';
+                        imgContainer.innerHTML = `<img src="${pase.imagen}" class="w-full h-full object-cover" alt="Selfie de asistencia">`;
+                        div.appendChild(imgContainer);
+                    } else {
+                        const colorContainer = document.createElement('div');
+                        colorContainer.className = 'w-full h-20 bg-gradient-to-r from-purple-500 to-emerald-400';
+                        div.appendChild(colorContainer);
+                    }
+
+                    const dataContainer = document.createElement('div');
+                    dataContainer.className = 'p-4 flex-1 flex flex-col';
+                    
+                    dataContainer.innerHTML = `
+                        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 mb-2 text-sm">
+                            <span class="font-bold text-stone-800">${pase.sender || 'Anónimo'}</span>
+                            <span class="text-emerald-500 font-bold">▶</span>
+                            <span class="font-bold text-purple-700">${pase.receiver || 'Alguien especial'}</span>
+                        </div>
+                        ${pase.mensaje ? `<p class="text-stone-600 text-sm italic break-words">"${pase.mensaje}"</p>` : ''}
+                    `;
+
+                    div.appendChild(dataContainer);
+                    feedContainer.appendChild(div);
+                });
+            }
+        }
+
+        // MANEJO DE IMÁGENES Y COMPRESIÓN
+        const inputFoto = document.getElementById('foto-input');
+        const fotoPreview = document.getElementById('foto-preview');
+        const fotoPlaceholder = document.getElementById('foto-placeholder');
+        const fotoPreviewContainer = document.getElementById('foto-preview-container');
+
+        inputFoto.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 600;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height = Math.round(height *= MAX_WIDTH / width); width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width = Math.round(width *= MAX_HEIGHT / height); height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    imageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    
+                    fotoPreview.src = imageDataUrl;
+                    fotoPlaceholder.classList.add('hidden');
+                    fotoPreviewContainer.classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ENVIAR DATOS
+        const form = document.getElementById('pase-form');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!isConnected) return;
+
+            // Feedback de cargando...
+            btnEnviar.disabled = true;
+            btnBg.className = "absolute inset-0 w-full h-full bg-stone-500 transition-colors";
+            btnTexto.innerHTML = 'Enviando... <span class="text-2xl animate-spin">⚽</span>';
+
+            const sender = document.getElementById('sender').value.trim();
+            const receiver = document.getElementById('receiver').value.trim();
+            const mensaje = document.getElementById('mensaje').value.trim();
+
+            const nuevoPaseData = {
+                sender,
+                receiver,
+                mensaje,
+                imagen: imageDataUrl,
+                timestamp: Date.now()
+            };
+
+            try {
+                if (modoLocal) {
+                    pasesGlobales.unshift(nuevoPaseData);
+                    localStorage.setItem('pases8M_v2', JSON.stringify(pasesGlobales));
+                    renderizarFeed();
+                } else {
+                    nuevoPaseData.userId = currentUser.uid;
+                    const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
+                    await addDoc(pasesRef, nuevoPaseData);
+                }
+
+                // Resetear form
+                form.reset();
+                imageDataUrl = null;
+                fotoPreview.src = '';
+                fotoPreviewContainer.classList.add('hidden');
+                fotoPlaceholder.classList.remove('hidden');
+
+                // Éxito
+                btnBg.className = "absolute inset-0 w-full h-full bg-emerald-600 transition-colors";
+                btnTexto.innerHTML = '¡Pase Enviado! <span class="text-2xl">✨</span>';
+            } catch (error) {
+                console.error("Error al enviar:", error);
+                btnBg.className = "absolute inset-0 w-full h-full bg-rose-600 transition-colors";
+                btnTexto.innerHTML = 'Error al enviar ❌';
+            }
+
+            // Restaurar botón
+            setTimeout(() => {
+                setConnectedUI(true, modoLocal);
+            }, 2000);
+        });
+
+    </script>
+</body>
+</html>
