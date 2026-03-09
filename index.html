@@ -3,375 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Pase Invisible - Stream 8M</title>
+    <title>Festival Nosotras | El Pase Invisible V5</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .font-brand { font-family: 'Playfair Display', serif; }
+        .text-brand { background: linear-gradient(135deg, #6b21a8 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hide { display: none !important; }
         
-        @keyframes pulse-fast {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        .animate-pulse-fast { animation: pulse-fast 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .card-enter { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-ticker { animation: ticker 40s linear infinite; }
 
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .card-enter { animation: slideInUp 0.5s ease-out forwards; }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Indicador de conexión */
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-online { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
-        .status-offline { background-color: #ef4444; }
+
+        @keyframes flash { 0%, 100% { color: inherit; } 50% { color: #10b981; transform: scale(1.1); } }
+        .flash-active { animation: flash 0.5s ease-in-out; }
     </style>
 </head>
-<body class="bg-stone-100 min-h-screen text-stone-800 flex flex-col">
+<body class="bg-[#fdfcf9] text-stone-900 min-h-screen">
 
-    <!-- Header del Evento -->
-    <header class="bg-purple-900 text-white shadow-xl relative z-20">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">⚽</span>
-                <div>
-                    <h1 class="text-2xl font-black uppercase tracking-wider text-purple-100">Copa 8M</h1>
-                    <p class="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Salud Mental en Juego</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <div class="bg-purple-950/50 px-3 py-1.5 rounded-full flex items-center text-xs font-bold tracking-wide border border-purple-800">
-                    <span id="conexion-dot" class="status-dot status-offline animate-pulse"></span>
-                    <span id="conexion-texto" class="text-purple-200">Conectando Nube...</span>
-                </div>
+    <!-- SELECTOR DE VISTA (ADMIN / PRODUCCIÓN) -->
+    <div id="mode-selector" class="fixed bottom-6 left-6 z-50 flex gap-2">
+        <button onclick="safeSwitchView('home')" title="Inicio" class="p-3 bg-stone-900 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-stone-700">🏠</button>
+        <button onclick="safeSwitchView('participant')" title="Móvil" class="p-3 bg-purple-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-purple-500">📱</button>
+        <button onclick="safeSwitchView('stream')" title="Stream" class="p-3 bg-emerald-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-emerald-500">🖥️</button>
+        <button onclick="safeSwitchView('admin')" title="Moderación" class="p-3 bg-rose-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-rose-500">🛠️</button>
+    </div>
+
+    <!-- MODAL DE PIN (SEGURIDAD) -->
+    <div id="pin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center hide">
+        <div class="bg-white p-10 rounded-[3rem] max-w-xs w-full text-center shadow-2xl">
+            <h3 class="text-2xl font-black mb-2">Acceso Privado</h3>
+            <p class="text-stone-400 text-xs mb-6 uppercase font-bold tracking-widest">Taller de Stream</p>
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-4xl text-center py-4 bg-stone-100 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-purple-500 transition-all font-black tracking-widest">
+            <div class="flex gap-2">
+                <button onclick="closePinModal()" class="flex-1 py-3 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
+                <button onclick="checkPin()" class="flex-1 py-3 bg-stone-900 text-white rounded-xl font-bold hover:bg-black transition">Entrar</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
-        
-        <!-- ZONA DE USUARIO -->
-        <section class="lg:col-span-5 bg-white p-6 md:p-10 shadow-[20px_0_30px_-15px_rgba(0,0,0,0.1)] relative z-10 overflow-y-auto">
-            <div class="max-w-md mx-auto">
-                <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold tracking-wide uppercase mb-4">En Vivo</span>
-                <h2 class="text-4xl font-black text-stone-900 leading-tight mb-2">El Pase <br><span class="text-purple-700">Invisible</span></h2>
-                <p class="text-stone-500 text-sm mb-8">
-                    En el fútbol, la asistencia vale tanto como el gol. En la vida, las redes de apoyo nos sostienen. <strong class="text-stone-800">Sacate una selfie y mandale un "pase" de agradecimiento a esa mujer que siempre te banca.</strong> Todo el estadio lo verá en la pantalla.
+    <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center hide">
+        <div class="bg-white p-8 rounded-[2rem] max-w-xs w-full text-center shadow-2xl">
+            <span class="text-4xl block mb-2">🗑️</span>
+            <h3 class="text-xl font-black mb-2 text-stone-900">¿Borrar mensaje?</h3>
+            <p class="text-stone-500 text-sm mb-6">Esta acción no se puede deshacer. Desaparecerá del stream.</p>
+            <div class="flex gap-2">
+                <button onclick="closeConfirmModal()" class="flex-1 py-3 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
+                <button id="btn-confirm-delete" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold shadow-lg hover:bg-rose-700 transition">Borrar</button>
+            </div>
+        </div>
+    </div>
+    <!-- VISTA 1: HOME -->
+    <section id="view-home" class="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fade">
+        <div class="max-w-4xl">
+            <p class="text-purple-700 font-bold uppercase tracking-[0.4em] text-[10px] mb-4 italic font-brand">Río Turbio | Festival Nosotras</p>
+            <h1 class="text-7xl md:text-9xl font-brand italic mb-4 leading-none tracking-tighter">Copa <span class="text-brand">Challenger</span></h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-stone-500 mb-12 italic tracking-tight">Fútbol Femenino & Bienestar Emocional</h2>
+            
+            <div class="bg-emerald-50 border border-emerald-100 p-10 rounded-[4rem] mb-12 shadow-sm min-h-[140px] flex items-center justify-center">
+                <p id="frase-text" class="text-xl md:text-2xl text-emerald-900 leading-relaxed italic font-medium transition-opacity duration-500">
+                    "El fútbol nos une, el apoyo nos fortalece. Tu mensaje es un pase al corazón."
                 </p>
+            </div>
 
-                <form id="pase-form" class="space-y-5">
-                    
-                    <!-- FOTO UPLOAD -->
-                    <div class="bg-stone-50 p-4 rounded-2xl border-2 border-dashed border-stone-300 text-center relative transition-colors hover:border-purple-400 group" id="foto-container">
-                        <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        
-                        <div id="foto-placeholder" class="py-4 pointer-events-none">
-                            <span class="text-4xl block mb-2">📸</span>
-                            <span class="block text-sm font-bold text-stone-700">Toca para sacarte una selfie</span>
-                            <span class="block text-xs text-stone-500 mt-1">(La imagen se comprimirá automáticamente)</span>
+            <div class="flex flex-col md:flex-row gap-6 justify-center">
+                <button onclick="safeSwitchView('participant')" class="px-12 py-6 bg-purple-700 text-white rounded-full font-black text-xl shadow-lg hover:bg-purple-800 transition transform hover:-translate-y-1">
+                    DÁ UN PASE 📱
+                </button>
+            </div>
+            
+            <div class="mt-20 flex flex-col items-center gap-4">
+                <img src="logo.png" alt="Logo Centro de Día El Árbol" class="h-20 w-auto object-contain" onerror="this.style.display='none'">
+                <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center">Iniciativa impulsada por el Taller de Stream del<br>Centro de Día El Árbol para el Festival Nosotras</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISTA 2: PARTICIPANTE (Móvil) -->
+    <section id="view-participant" class="min-h-screen hide p-4 md:p-8 bg-[#fdfcf9] flex flex-col items-center">
+        <div class="max-w-md w-full">
+            <header class="flex items-center justify-between mb-8">
+                <button onclick="safeSwitchView('home')" class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-stone-100 text-stone-400 hover:text-purple-600 transition">←</button>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-purple-700 uppercase italic">El Pase Invisible</p>
+                        <p class="text-[10px] font-bold text-emerald-600 uppercase">En Vivo</p>
+                    </div>
+                    <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+                </div>
+            </header>
+
+            <div class="bg-white p-8 rounded-[3rem] shadow-xl border border-stone-100 mb-10">
+                <h3 class="text-3xl font-brand italic mb-2 tracking-tighter">Nueva Asistencia</h3>
+                <p class="text-xs text-stone-400 mb-8 italic">Sacate una selfie y agradecé a tu red de apoyo.</p>
+                
+                <form id="pase-form" class="space-y-6">
+                    <div class="relative group aspect-square bg-stone-50 rounded-[2.5rem] overflow-hidden border-2 border-dashed border-stone-200 cursor-pointer hover:border-purple-400 transition-colors" id="foto-trigger">
+                        <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                        <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-300">
+                            <span class="text-6xl mb-2">📸</span>
+                            <p class="font-bold text-sm uppercase tracking-tighter">Tomar Foto</p>
                         </div>
-                        
-                        <div id="foto-preview-container" class="hidden relative w-full aspect-square max-h-64 rounded-xl overflow-hidden shadow-inner">
-                            <img id="foto-preview" src="" alt="Tu selfie" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="text-white font-bold text-sm bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Toca para cambiar foto</span>
-                            </div>
-                        </div>
+                        <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
                     </div>
 
-                    <!-- DATOS -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">De (Vos):</label>
-                            <input type="text" id="sender" placeholder="Tu nombre" required class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Para:</label>
-                            <input type="text" id="receiver" placeholder="Quién te banca" required class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium">
-                        </div>
+                    <div class="space-y-4">
+                        <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-stone-700 shadow-inner">
+                        <input type="text" id="receiver" placeholder="¿A quién agradecés?" required class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-stone-700 shadow-inner">
+                        <textarea id="mensaje" rows="2" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium resize-none text-stone-700 shadow-inner"></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Mensaje (Opcional):</label>
-                        <textarea id="mensaje" rows="2" placeholder="Ej: Gracias por escucharme siempre..." class="w-full px-4 py-3 bg-stone-100 rounded-xl border-transparent focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none font-medium resize-none"></textarea>
-                    </div>
-
-                    <button type="submit" id="btn-enviar" disabled class="w-full relative group overflow-hidden rounded-2xl shadow-md transition-all active:scale-[0.98] opacity-50 cursor-not-allowed">
-                        <div id="btn-bg" class="absolute inset-0 w-full h-full bg-stone-400 transition-colors"></div>
-                        <div class="relative px-6 py-5 flex items-center justify-center gap-3">
-                            <span id="btn-texto" class="text-white font-black text-xl tracking-wide uppercase">Conectando...</span>
-                            <span class="text-2xl">⏳</span>
-                        </div>
+                    <button type="submit" id="submit-btn" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">
+                        SUBIR AL MURO 🎙️
                     </button>
                 </form>
             </div>
-        </section>
-
-        <!-- ZONA DE STREAM -->
-        <section class="lg:col-span-7 bg-stone-200/50 p-6 md:p-10 flex flex-col h-full lg:h-[calc(100vh-80px)]">
             
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 flex items-center justify-between mb-8 shrink-0 relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 opacity-5 text-9xl">⚽</div>
-                <div class="relative z-10">
-                    <h3 class="text-stone-500 font-bold uppercase tracking-wider text-sm">Contador Oficial</h3>
-                    <p class="text-stone-900 font-black text-xl">Asistencias Emocionales</p>
-                </div>
-                <div class="relative z-10 bg-purple-900 text-white px-6 py-2 rounded-2xl flex items-baseline gap-1 shadow-inner">
-                    <span id="contador-numero" class="text-5xl font-black tabular-nums transition-transform duration-300 inline-block">0</span>
-                </div>
-            </div>
+            <div id="participant-feed-content" class="space-y-8 pb-32"></div>
+        </div>
+    </section>
 
-            <div class="flex-1 overflow-y-auto no-scrollbar relative">
-                <div class="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-stone-100 to-transparent z-10 pointer-events-none"></div>
-                
-                <div id="feed-pases" class="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-20">
-                    <!-- Tarjetas inyectadas dinámicamente -->
+    <!-- VISTA 3: STREAM (Pantalla Gigante) -->
+    <section id="view-stream" class="h-screen hide flex flex-col lg:flex-row overflow-hidden bg-[#faf9f6] relative">
+        <div class="lg:w-1/3 p-10 lg:p-16 flex flex-col justify-between bg-white border-r border-stone-100 relative overflow-hidden shrink-0">
+            <div class="relative z-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="logo.png" alt="Logo El Árbol" class="h-16 w-auto object-contain" onerror="this.style.display='none'">
+                    <div>
+                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] leading-none">Producción En Vivo</p>
+                        <p class="font-bold text-emerald-700 text-sm italic">Taller de Stream - El Árbol</p>
+                    </div>
                 </div>
                 
-                <div id="feed-vacio" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 text-center px-4">
-                    <span class="text-6xl mb-4 grayscale opacity-50">🏟️</span>
-                    <p class="font-bold text-lg text-stone-600">El estadio está en silencio...</p>
-                    <p class="text-sm">Sé la primera persona en mandar una asistencia.</p>
+                <h1 class="text-6xl font-brand italic mb-2 leading-none tracking-tighter">Festival <span class="text-brand">Nosotras</span></h1>
+                <p class="text-stone-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-12 italic">Copa Challenger · Río Turbio</p>
+                
+                <div class="bg-white rounded-[4rem] p-12 text-center border border-stone-100 shadow-sm relative overflow-hidden">
+                    <div id="counter-flash" class="absolute inset-0 bg-emerald-500/10 opacity-0 transition-opacity duration-300"></div>
+                    <span class="block text-stone-400 font-bold uppercase text-[10px] mb-4 tracking-widest">Asistencias en Vivo</span>
+                    <span id="stream-counter" class="text-[12rem] font-black tracking-tighter text-stone-900 tabular-nums leading-none">0</span>
                 </div>
             </div>
-        </section>
+            
+            <div class="relative z-10 bg-purple-900 text-white p-8 rounded-[2.5rem] shadow-2xl mt-8">
+                <p class="text-lg font-brand italic leading-tight">"En el fútbol como en la vida, jugar en equipo es cuidar la salud mental."</p>
+            </div>
+        </div>
 
-    </main>
+        <div class="flex-1 p-10 overflow-y-auto no-scrollbar pb-32" id="stream-feed">
+            <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8 space-y-8"></div>
+        </div>
 
-    <!-- FIREBASE LOGIC (CONEXIÓN LIMPIA A LA NUBE CON TUS CLAVES) -->
+        <!-- ZÓCALO TICKER -->
+        <div class="absolute bottom-0 left-0 w-full bg-stone-900 text-white py-4 overflow-hidden z-30 flex items-center shadow-2xl">
+            <div class="bg-purple-700 px-6 py-4 absolute left-0 z-40 font-black italic text-sm tracking-widest border-r border-white/20">EL ÁRBOL STREAM</div>
+            <div class="whitespace-nowrap flex animate-ticker pl-[150px]">
+                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">⚽ Copa Challenger Femenina: El apoyo de la tribuna se siente en la cancha.</span>
+                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">🌳 Salud Mental: Pedir ayuda es la jugada más valiente.</span>
+                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">💜 Festival Nosotras: Río Turbio unido por el deporte e igualdad.</span>
+                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">🎙️ Transmisión producida por el Taller de Stream del Centro de Día El Árbol.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISTA 4: MODERACIÓN -->
+    <section id="view-admin" class="min-h-screen hide p-10 bg-rose-50 flex flex-col items-center overflow-y-auto">
+        <div class="max-w-6xl w-full">
+            <div class="flex items-center justify-between mb-10">
+                <div>
+                    <h2 class="text-4xl font-black text-rose-900 mb-2 italic">Moderación 🛠️</h2>
+                    <p class="text-rose-700 font-medium">Borra mensajes que no correspondan a la Copa Challenger.</p>
+                </div>
+                <button onclick="safeSwitchView('stream')" class="bg-rose-900 hover:bg-rose-950 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition">Volver al Stream</button>
+            </div>
+            <div id="admin-feed-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
+        </div>
+    </section>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // TUS CLAVES DE FIREBASE (Ya integradas y limpias)
-        const firebaseConfig = {
+        // CONFIGURACIÓN DE FIREBASE
+        const firebaseConfigText = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+        const firebaseConfig = firebaseConfigText ? JSON.parse(firebaseConfigText) : {
             apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
             authDomain: "copa-8m-stream.firebaseapp.com",
             projectId: "copa-8m-stream",
             storageBucket: "copa-8m-stream.firebasestorage.app",
             messagingSenderId: "650833891517",
-            appId: "1:650833891517:web:bfa5350b0cec07887f67d4",
-            measurementId: "G-N7SXRGKQZ3"
+            appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let activeView = 'home';
+        let allPases = [];
+        let allRespuestas = [];
+        let pasesCount = 0;
+        let pendingView = null;
+        let paseToDelete = null;
+
+        // NUEVO PIN DE SEGURIDAD
+        const ADMIN_PIN = "5259";
+
+        window.safeSwitchView = (viewId) => {
+            if (viewId === 'admin' || viewId === 'stream') {
+                pendingView = viewId;
+                document.getElementById('pin-modal').classList.remove('hide');
+                document.getElementById('pin-input').focus();
+            } else {
+                switchView(viewId);
+            }
         };
 
-        let app, auth, db;
-        let currentUser = null;
-        let pasesGlobales = [];
-        let imageDataUrl = null;
+        window.checkPin = () => {
+            const input = document.getElementById('pin-input');
+            if (input.value === ADMIN_PIN) {
+                switchView(pendingView);
+                closePinModal();
+            } else {
+                input.value = "";
+                input.classList.add('animate-shake'); 
+                setTimeout(() => input.classList.remove('animate-shake'), 400);
+            }
+        };
 
-        // Elementos UI
-        const dotConexion = document.getElementById('conexion-dot');
-        const textoConexion = document.getElementById('conexion-texto');
-        const btnEnviar = document.getElementById('btn-enviar');
-        const btnBg = document.getElementById('btn-bg');
-        const btnTexto = document.getElementById('btn-texto');
-        const contadorElement = document.getElementById('contador-numero');
-        const feedContainer = document.getElementById('feed-pases');
-        const feedVacio = document.getElementById('feed-vacio');
+        window.closePinModal = () => {
+            document.getElementById('pin-modal').classList.add('hide');
+            document.getElementById('pin-input').value = "";
+            pendingView = null;
+        };
 
-        // Inicialización de la aplicación
-        async function initApp() {
+        function switchView(viewId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hide'));
+            document.getElementById(`view-${viewId}`).classList.remove('hide');
+            activeView = viewId;
+            updateUI();
+            window.scrollTo(0,0);
+        }
+
+        const start = async () => {
             try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // Nos conectamos de forma anónima a tu Firebase
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
                 
                 onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        // Encender semáforo verde
-                        dotConexion.classList.replace('status-offline', 'status-online');
-                        textoConexion.textContent = "Sincronizado";
-                        btnEnviar.disabled = false;
-                        btnEnviar.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
-                        btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
-                        
-                        // Arrancar la escucha en tiempo real
-                        iniciarEscuchaTiempoReal();
-                    }
-                });
-            } catch(e) { 
-                console.error("Error iniciando Firebase:", e);
-                textoConexion.textContent = "Error de conexión";
-            }
-        }
-
-        // Ejecutar inicialización
-        initApp();
-
-        // Leer datos en Tiempo Real (Nube)
-        function iniciarEscuchaTiempoReal() {
-            if (!currentUser || !db) return;
-            const pasesRef = collection(db, 'artifacts', 'copa-8m-stream', 'public', 'data', 'pases_en_vivo');
-            
-            onSnapshot(pasesRef, (snapshot) => {
-                pasesGlobales = [];
-                snapshot.forEach(doc => {
-                    pasesGlobales.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Ordenar en memoria (los más nuevos primero)
-                pasesGlobales.sort((a, b) => b.timestamp - a.timestamp);
-                renderizarFeed();
-            }, (error) => {
-                console.error("Error al escuchar actualizaciones de la base de datos:", error);
-            });
-        }
-
-        // RENDERIZAR FEED
-        function renderizarFeed() {
-            contadorElement.textContent = pasesGlobales.length;
-            
-            contadorElement.classList.remove('animate-pulse-fast');
-            void contadorElement.offsetWidth;
-            contadorElement.classList.add('animate-pulse-fast');
-
-            if (pasesGlobales.length === 0) {
-                feedVacio.style.display = 'flex';
-                feedContainer.innerHTML = '';
-            } else {
-                feedVacio.style.display = 'none';
-                feedContainer.innerHTML = '';
-                
-                const pasesMostrar = pasesGlobales.slice(0, 50);
-                
-                pasesMostrar.forEach(pase => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-white rounded-2xl overflow-hidden shadow-md border border-stone-200 card-enter flex flex-col';
-                    
-                    if (pase.imagen) {
-                        const imgContainer = document.createElement('div');
-                        imgContainer.className = 'w-full aspect-[4/3] bg-stone-100 relative';
-                        imgContainer.innerHTML = `<img src="${pase.imagen}" class="w-full h-full object-cover" alt="Selfie de asistencia">`;
-                        div.appendChild(imgContainer);
-                    } else {
-                        const colorContainer = document.createElement('div');
-                        colorContainer.className = 'w-full h-20 bg-gradient-to-r from-purple-500 to-emerald-400';
-                        div.appendChild(colorContainer);
-                    }
-
-                    const dataContainer = document.createElement('div');
-                    dataContainer.className = 'p-4 flex-1 flex flex-col';
-                    
-                    dataContainer.innerHTML = `
-                        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 mb-2 text-sm">
-                            <span class="font-bold text-stone-800">${pase.sender || 'Anónimo'}</span>
-                            <span class="text-emerald-500 font-bold">▶</span>
-                            <span class="font-bold text-purple-700">${pase.receiver || 'Alguien especial'}</span>
-                        </div>
-                        ${pase.mensaje ? `<p class="text-stone-600 text-sm italic break-words">"${pase.mensaje}"</p>` : ''}
-                    `;
-
-                    div.appendChild(dataContainer);
-                    feedContainer.appendChild(div);
-                });
-            }
-        }
-
-        // MANEJO DE IMÁGENES Y COMPRESIÓN
-        const inputFoto = document.getElementById('foto-input');
-        const fotoPreview = document.getElementById('foto-preview');
-        const fotoPlaceholder = document.getElementById('foto-placeholder');
-        const fotoPreviewContainer = document.getElementById('foto-preview-container');
-
-        inputFoto.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
-                    const MAX_HEIGHT = 600;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) { height = Math.round(height *= MAX_WIDTH / width); width = MAX_WIDTH; }
-                    } else {
-                        if (height > MAX_HEIGHT) { width = Math.round(width *= MAX_HEIGHT / height); height = MAX_HEIGHT; }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    imageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                    
-                    fotoPreview.src = imageDataUrl;
-                    fotoPlaceholder.classList.add('hidden');
-                    fotoPreviewContainer.classList.remove('hidden');
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // ENVIAR DATOS A LA NUBE
-        const form = document.getElementById('pase-form');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-
-            // Feedback de cargando...
-            btnEnviar.disabled = true;
-            btnBg.className = "absolute inset-0 w-full h-full bg-stone-500 transition-colors";
-            btnTexto.innerHTML = 'Enviando... <span class="text-2xl animate-spin">⚽</span>';
-
-            const sender = document.getElementById('sender').value.trim();
-            const receiver = document.getElementById('receiver').value.trim();
-            const mensaje = document.getElementById('mensaje').value.trim();
-
-            const nuevoPaseData = {
-                sender,
-                receiver,
-                mensaje,
-                imagen: imageDataUrl,
-                timestamp: Date.now(),
-                userId: currentUser.uid
-            };
-
-            try {
-                // Enviar directo a la Nube (Firestore)
-                const pasesRef = collection(db, 'artifacts', 'copa-8m-stream', 'public', 'data', 'pases_en_vivo');
-                await addDoc(pasesRef, nuevoPaseData);
-
-                // Resetear form
-                form.reset();
-                imageDataUrl = null;
-                fotoPreview.src = '';
-                fotoPreviewContainer.classList.add('hidden');
-                fotoPlaceholder.classList.remove('hidden');
-
-                // Éxito
-                btnBg.className = "absolute inset-0 w-full h-full bg-emerald-600 transition-colors";
-                btnTexto.innerHTML = '¡Pase Enviado! <span class="text-2xl">✨</span>';
-            } catch (error) {
-                console.error("Error al enviar:", error);
-                btnBg.className = "absolute inset-0 w-full h-full bg-rose-600 transition-colors";
-                btnTexto.innerHTML = 'Error al enviar ❌';
-            }
-
-            // Restaurar botón
-            setTimeout(() => {
-                btnEnviar.disabled = false;
-                btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
-                btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
-            }, 2000);
-        });
-
-    </script>
-</body>
-</html>
+                    currentUser = user;
+                    if(user) {
+                        const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
+                        onSnapshot(pasesRef, (snap) => {
+                            let prevCount = pasesCount;
+                            allPases = [];
+                            snap.forEach(doc => allPases.push({id: doc.id, ...doc.data()}));
+                            allPases.sort((a,b) => b.timestamp - a.timestamp);
+                            pasesCount = allPases.length;
+                            
+                            if(pasesCount > prevCount && activeView === 'stream') {
+                                const flash = document.getElementById('counter-flash');
+                                if(flash) { flash.style.opacity = 1; setTimeout(() => flash.style.opacity = 0, 1000); }
+                            }
+                            updateUI();
