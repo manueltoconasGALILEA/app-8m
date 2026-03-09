@@ -151,7 +151,15 @@
 
         // Configuración de entorno y Modo Inteligente
         let isFirebaseAvailable = typeof __firebase_config !== 'undefined';
-        let firebaseConfig = {};
+        let firebaseConfig = {
+  apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
+  authDomain: "copa-8m-stream.firebaseapp.com",
+  projectId: "copa-8m-stream",
+  storageBucket: "copa-8m-stream.firebasestorage.app",
+  messagingSenderId: "650833891517",
+  appId: "1:650833891517:web:bfa5350b0cec07887f67d4",
+  measurementId: "G-N7SXRGKQZ3"
+};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
 
         let app, auth, db;
@@ -196,11 +204,34 @@
                     db = getFirestore(app);
 
                     // REGLA ESTRICTA: Autenticar SIEMPRE antes de hacer cualquier otra cosa
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    async function initApp() {
+            if (isFirebaseAvailable) {
+                try {
+                    // Usamos las llaves que pegaste arriba
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    // Nos conectamos de forma anónima a Firebase
+                    await signInAnonymously(auth);
+                    
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser = user;
+                        if (user) {
+                            setConnectedUI(true, false);
+                            iniciarEscuchaTiempoReal();
+                        } else {
+                            iniciarModoLocal();
+                        }
+                    });
+                } catch(e) { 
+                    console.error("Error iniciando Firebase, pasando a Modo Local:", e);
+                    iniciarModoLocal();
+                }
+            } else {
+                iniciarModoLocal();
+            }
+        }
                     
                     onAuthStateChanged(auth, (user) => {
                         currentUser = user;
@@ -413,4 +444,5 @@
 
     </script>
 </body>
+
 </html>
