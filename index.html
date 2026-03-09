@@ -25,9 +25,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Indicador de conexión */
-        .status-dot {
-            width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px;
-        }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .status-online { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-offline { background-color: #ef4444; }
     </style>
@@ -47,7 +45,7 @@
             <div class="text-right">
                 <div class="bg-purple-950/50 px-3 py-1.5 rounded-full flex items-center text-xs font-bold tracking-wide border border-purple-800">
                     <span id="conexion-dot" class="status-dot status-offline animate-pulse"></span>
-                    <span id="conexion-texto" class="text-purple-200">Conectando...</span>
+                    <span id="conexion-texto" class="text-purple-200">Conectando Nube...</span>
                 </div>
             </div>
         </div>
@@ -143,31 +141,27 @@
 
     </main>
 
-    <!-- FIREBASE LOGIC -->
+    <!-- FIREBASE LOGIC (CONEXIÓN LIMPIA A LA NUBE CON TUS CLAVES) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuración de entorno y Modo Inteligente
-        let isFirebaseAvailable = typeof __firebase_config !== 'undefined';
-        let firebaseConfig = {
-  apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
-  authDomain: "copa-8m-stream.firebaseapp.com",
-  projectId: "copa-8m-stream",
-  storageBucket: "copa-8m-stream.firebasestorage.app",
-  messagingSenderId: "650833891517",
-  appId: "1:650833891517:web:bfa5350b0cec07887f67d4",
-  measurementId: "G-N7SXRGKQZ3"
-};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
+        // TUS CLAVES DE FIREBASE (Ya integradas y limpias)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
+            authDomain: "copa-8m-stream.firebaseapp.com",
+            projectId: "copa-8m-stream",
+            storageBucket: "copa-8m-stream.firebasestorage.app",
+            messagingSenderId: "650833891517",
+            appId: "1:650833891517:web:bfa5350b0cec07887f67d4",
+            measurementId: "G-N7SXRGKQZ3"
+        };
 
         let app, auth, db;
         let currentUser = null;
-        let isConnected = false;
         let pasesGlobales = [];
         let imageDataUrl = null;
-        let modoLocal = false;
 
         // Elementos UI
         const dotConexion = document.getElementById('conexion-dot');
@@ -175,105 +169,48 @@
         const btnEnviar = document.getElementById('btn-enviar');
         const btnBg = document.getElementById('btn-bg');
         const btnTexto = document.getElementById('btn-texto');
+        const contadorElement = document.getElementById('contador-numero');
+        const feedContainer = document.getElementById('feed-pases');
+        const feedVacio = document.getElementById('feed-vacio');
 
-        // Función para cambiar estado UI
-        function setConnectedUI(connected, isLocal = false) {
-            isConnected = connected;
-            if (connected) {
-                dotConexion.classList.replace('status-offline', 'status-online');
-                textoConexion.textContent = isLocal ? "Modo Local" : "Sincronizado";
-                if(isLocal) {
-                    dotConexion.style.backgroundColor = '#f59e0b'; // Naranja para local
-                    dotConexion.style.boxShadow = '0 0 8px #f59e0b';
-                }
-                
-                btnEnviar.disabled = false;
-                btnEnviar.classList.remove('opacity-50', 'cursor-not-allowed');
-                btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
-                btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
-            }
-        }
-
-        // Inicialización estricta de la aplicación
+        // Inicialización de la aplicación
         async function initApp() {
-            if (isFirebaseAvailable) {
-                try {
-                    firebaseConfig = JSON.parse(__firebase_config);
-                    app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-                    // REGLA ESTRICTA: Autenticar SIEMPRE antes de hacer cualquier otra cosa
-                    async function initApp() {
-            if (isFirebaseAvailable) {
-                try {
-                    // Usamos las llaves que pegaste arriba
-                    app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-
-                    // Nos conectamos de forma anónima a Firebase
-                    await signInAnonymously(auth);
-                    
-                    onAuthStateChanged(auth, (user) => {
+                // Nos conectamos de forma anónima a tu Firebase
+                await signInAnonymously(auth);
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
                         currentUser = user;
-                        if (user) {
-                            setConnectedUI(true, false);
-                            iniciarEscuchaTiempoReal();
-                        } else {
-                            iniciarModoLocal();
-                        }
-                    });
-                } catch(e) { 
-                    console.error("Error iniciando Firebase, pasando a Modo Local:", e);
-                    iniciarModoLocal();
-                }
-            } else {
-                iniciarModoLocal();
-            }
-        }
-                    
-                    onAuthStateChanged(auth, (user) => {
-                        currentUser = user;
-                        if (user) {
-                            setConnectedUI(true, false);
-                            iniciarEscuchaTiempoReal();
-                        } else {
-                            iniciarModoLocal();
-                        }
-                    });
-                } catch(e) { 
-                    console.error("Error iniciando Firebase, pasando a Modo Local:", e);
-                    iniciarModoLocal();
-                }
-            } else {
-                iniciarModoLocal();
+                        // Encender semáforo verde
+                        dotConexion.classList.replace('status-offline', 'status-online');
+                        textoConexion.textContent = "Sincronizado";
+                        btnEnviar.disabled = false;
+                        btnEnviar.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
+                        btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
+                        
+                        // Arrancar la escucha en tiempo real
+                        iniciarEscuchaTiempoReal();
+                    }
+                });
+            } catch(e) { 
+                console.error("Error iniciando Firebase:", e);
+                textoConexion.textContent = "Error de conexión";
             }
         }
 
         // Ejecutar inicialización
         initApp();
 
-        function iniciarModoLocal() {
-            modoLocal = true;
-            console.warn("Ejecutando en modo local. No hay sincronización en la nube real-time externa.");
-            pasesGlobales = JSON.parse(localStorage.getItem('pases8M_v2')) || [];
-            setConnectedUI(true, true);
-            renderizarFeed();
-        }
-
-        // Sincronizar entre diferentes pestañas en Modo Local (Ideal para pruebas locales)
-        window.addEventListener('storage', (e) => {
-            if (modoLocal && e.key === 'pases8M_v2') {
-                pasesGlobales = JSON.parse(e.newValue) || [];
-                renderizarFeed();
-            }
-        });
-
         // Leer datos en Tiempo Real (Nube)
         function iniciarEscuchaTiempoReal() {
             if (!currentUser || !db) return;
-            const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
+            const pasesRef = collection(db, 'artifacts', 'copa-8m-stream', 'public', 'data', 'pases_en_vivo');
             
             onSnapshot(pasesRef, (snapshot) => {
                 pasesGlobales = [];
@@ -290,10 +227,6 @@
         }
 
         // RENDERIZAR FEED
-        const contadorElement = document.getElementById('contador-numero');
-        const feedContainer = document.getElementById('feed-pases');
-        const feedVacio = document.getElementById('feed-vacio');
-
         function renderizarFeed() {
             contadorElement.textContent = pasesGlobales.length;
             
@@ -385,12 +318,12 @@
             reader.readAsDataURL(file);
         });
 
-        // ENVIAR DATOS
+        // ENVIAR DATOS A LA NUBE
         const form = document.getElementById('pase-form');
         
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!isConnected) return;
+            if (!currentUser) return;
 
             // Feedback de cargando...
             btnEnviar.disabled = true;
@@ -406,19 +339,14 @@
                 receiver,
                 mensaje,
                 imagen: imageDataUrl,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                userId: currentUser.uid
             };
 
             try {
-                if (modoLocal) {
-                    pasesGlobales.unshift(nuevoPaseData);
-                    localStorage.setItem('pases8M_v2', JSON.stringify(pasesGlobales));
-                    renderizarFeed();
-                } else {
-                    nuevoPaseData.userId = currentUser.uid;
-                    const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
-                    await addDoc(pasesRef, nuevoPaseData);
-                }
+                // Enviar directo a la Nube (Firestore)
+                const pasesRef = collection(db, 'artifacts', 'copa-8m-stream', 'public', 'data', 'pases_en_vivo');
+                await addDoc(pasesRef, nuevoPaseData);
 
                 // Resetear form
                 form.reset();
@@ -438,11 +366,12 @@
 
             // Restaurar botón
             setTimeout(() => {
-                setConnectedUI(true, modoLocal);
+                btnEnviar.disabled = false;
+                btnBg.className = "absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:to-emerald-300 transition-colors";
+                btnTexto.innerHTML = 'Dar la Asistencia <span class="text-2xl">👟⚽</span>';
             }, 2000);
         });
 
     </script>
 </body>
-
 </html>
