@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Challenger | Festival Nosotras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-brand { font-family: 'Playfair Display', serif; }
+        .text-brand { background: linear-gradient(135deg, #6b21a8 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hide { display: none !important; }
+        @keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .animate-bounce-subtle { animation: bounce-subtle 2s infinite ease-in-out; }
+        @keyframes roulette { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+        .animate-roulette { animation: roulette 0.1s infinite; }
+    </style>
+</head>
+<body class="bg-[#fdfcf9] text-stone-900 min-h-screen">
+
+    <!-- MODAL DE PIN (SEGURIDAD) -->
+    <div id="pin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center hide">
+        <div class="bg-white p-10 rounded-[3rem] max-w-xs w-full text-center shadow-2xl">
+            <h3 class="text-2xl font-black mb-2">Acceso Privado</h3>
+            <p class="text-stone-400 text-xs mb-6 uppercase font-bold tracking-widest">Taller de Stream</p>
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-4xl text-center py-4 bg-stone-100 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-purple-500 transition-all font-black tracking-widest">
+            <div class="flex gap-2">
+                <button onclick="closePinModal()" class="flex-1 py-3 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
+                <button onclick="checkPin()" class="flex-1 py-3 bg-stone-900 text-white rounded-xl font-bold hover:bg-black transition">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SELECTOR DE ROL -->
+    <div id="role-selector" class="fixed bottom-4 left-4 z-50 flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
+        <button onclick="switchRole('player')" class="p-2 bg-purple-600 text-white rounded-lg text-xs font-bold shadow-lg">JUGAR</button>
+        <button onclick="safeAction('stream')" class="p-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg">STREAM</button>
+    </div>
+
+    <!-- VISTA JUGADOR (CELULAR) -->
+    <section id="view-player" class="min-h-screen flex flex-col items-center p-6">
+        <header class="w-full max-w-md flex flex-col gap-6 mb-10">
+            <!-- Botón para volver a la app principal -->
+            <button onclick="irAlInicio()" class="self-start flex items-center gap-2 text-xs font-bold text-stone-500 bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-100 hover:bg-purple-50 hover:text-purple-700 transition">
+                <span class="text-lg leading-none">←</span> Ir al Muro Principal
+            </button>
+            <div class="flex justify-between items-center">
+                <span class="text-2xl">⚽</span>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-purple-700 uppercase tracking-widest leading-none">Trivia Desafío</p>
+                    <p class="text-[10px] font-bold text-stone-400 uppercase">Festival Nosotras</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Pantalla de Inicio -->
+        <div id="player-start" class="w-full max-w-md text-center">
+            <h1 class="text-5xl font-brand italic mb-4 leading-none">¿Cuánto <span class="text-brand">sabés?</span></h1>
+            <p class="text-stone-500 text-sm mb-8">Demostrá tus conocimientos sobre fútbol femenino y salud mental. ¡Sumá puntos para el ranking!</p>
+            <input type="text" id="player-name" placeholder="Nombre y Apellido" class="w-full p-5 rounded-2xl border-4 border-purple-200 bg-white outline-none focus:border-purple-600 focus:ring-4 focus:ring-purple-100 font-black text-xl text-center shadow-lg transition-all text-purple-900 placeholder:text-stone-400">
+            <p id="name-error" class="text-rose-500 font-bold text-sm hide mt-2 mb-4">¡Por favor, ingresá tu nombre completo!</p>
+            <button onclick="startGame()" class="w-full mt-4 py-5 bg-purple-700 text-white rounded-2xl font-black text-xl shadow-xl active:scale-95 transition hover:bg-purple-800">¡EMPEZAR YA! 🚀</button>
+        </div>
+
+        <!-- Pantalla de Preguntas -->
+        <div id="player-quiz" class="w-full max-w-md hide">
+            <div class="mb-4 flex justify-between items-end">
+                <span id="quiz-progress" class="text-xs font-black text-purple-700 uppercase">Pregunta 1/10</span>
+                <span id="quiz-score" class="text-xs font-black text-emerald-600 uppercase">Puntos: 0</span>
+            </div>
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-stone-100 mb-6 min-h-[200px] flex items-center justify-center text-center">
+                <p id="question-text" class="text-xl font-bold leading-tight text-stone-800">¿Pregunta aquí?</p>
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+                <button onclick="checkAnswer(true)" class="py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition">VERDADERO 👍</button>
+                <button onclick="checkAnswer(false)" class="py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 transition">FALSO 👎</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="player-end" class="w-full max-w-md text-center hide">
+            <span class="text-6xl mb-4 block animate-bounce-subtle">🏆</span>
+            <h2 class="text-4xl font-brand italic mb-2">¡Finalizado!</h2>
+            <p class="text-stone-500 mb-6">Gracias por participar. Mirá la pantalla gigante para ver tu posición en el ranking.</p>
+            <div class="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm inline-block px-10">
+                <p class="text-xs font-bold text-stone-400 uppercase mb-1">Tu Puntaje Total</p>
+                <p id="final-score" class="text-6xl font-black text-purple-700 leading-none">0</p>
+            </div>
+            <button onclick="safeAction('stream')" class="w-full mt-10 py-5 bg-stone-900 text-white rounded-2xl font-black text-xl shadow-xl active:scale-95 transition hover:bg-black">VER RANKING 🏆</button>
+        </div>
+    </section>
+
+    <!-- VISTA STREAM (DASHBOARD PARA TRANSMISIÓN) -->
+    <section id="view-stream" class="h-screen hide flex flex-col lg:flex-row overflow-hidden bg-white">
+        <!-- Sidebar -->
+        <div class="lg:w-1/3 p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-stone-100 bg-[#fdfcf9]">
+            <div>
+                <button onclick="irAlInicio()" class="mb-8 inline-flex items-center gap-2 text-xs font-bold text-stone-500 bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-100 hover:bg-purple-50 hover:text-purple-700 transition">
+                    <span class="text-lg leading-none">←</span> Ir al Muro Principal
+                </button>
+                <div class="flex items-center gap-3 mb-6 lg:mb-10">
+                    <span class="text-4xl">🎙️</span>
+                    <div>
+                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest">En Vivo</p>
+                        <p class="font-bold text-emerald-700 text-sm italic">C.D. El Árbol - Río Turbio</p>
+                    </div>
+                </div>
+                <h1 class="text-4xl lg:text-6xl font-brand italic mb-4 leading-none">Trivia <span class="text-brand">Nosotras</span></h1>
+                <p class="text-stone-500 font-medium leading-relaxed italic text-sm lg:text-base mb-6 lg:mb-0">
+                    ¿Qué tanto sabemos de lo que pasa en la cancha y en la cabeza? 
+                    Escaneá el QR y participá del ranking en tiempo real.
+                </p>
+            </div>
+            <div class="bg-stone-900 text-white p-6 lg:p-10 rounded-[2rem] lg:rounded-[3rem] shadow-2xl relative">
+                <p class="text-xs font-bold text-purple-300 uppercase mb-2 tracking-widest">Participantes Activos</p>
+                <p id="stream-total-players" class="text-5xl lg:text-7xl font-black leading-none mb-6">0</p>
+                <button onclick="safeAction('sorteo')" class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-colors shadow-lg">🎲 Realizar Sorteo</button>
+                <p id="sorteo-error" class="text-rose-400 font-bold text-xs hide mt-3 text-center absolute -bottom-6 left-0 right-0">¡Se necesitan más de 2 participantes!</p>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="flex-1 p-8 lg:p-16 overflow-y-auto no-scrollbar relative">
+            <h3 class="text-xl lg:text-2xl font-brand italic mb-6 lg:mb-10 border-b border-stone-100 pb-4 text-stone-800">Ranking de Goleadoras Mentales 🏆</h3>
+            <div id="leaderboard-list" class="space-y-4 pb-20">
+                <!-- Se llena con Firebase -->
+            </div>
+
+            <!-- OVERLAY SORTEO -->
+            <div id="sorteo-overlay" class="absolute inset-0 bg-[#fdfcf9]/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center hide p-10 text-center">
+                <h2 class="text-5xl font-brand italic mb-2 text-stone-800">Sorteo Especial 🎁</h2>
+                <p class="text-sm font-bold text-stone-500 uppercase tracking-widest mb-10">(Excluyendo al 1º y 2º puesto)</p>
+                
+                <div class="bg-white p-10 rounded-[3rem] w-full max-w-2xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-emerald-50 opacity-50"></div>
+                    <span id="sorteo-name" class="text-5xl font-black uppercase italic text-stone-300 text-center relative z-10 transition-all duration-200">¿QUIÉN GANARÁ?</span>
+                </div>
+                
+                <button id="btn-cerrar-sorteo" onclick="cerrarSorteo()" class="hide px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black transition shadow-xl text-lg">Volver al Ranking</button>
+            </div>
+        </div>
+    </section>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfigText = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+        const firebaseConfig = firebaseConfigText ? JSON.parse(firebaseConfigText) : {
+            apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
+            authDomain: "copa-8m-stream.firebaseapp.com",
+            projectId: "copa-8m-stream",
+            storageBucket: "copa-8m-stream.firebasestorage.app",
+            messagingSenderId: "650833891517",
+            appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // SÚPER BANCO DE PREGUNTAS (Mezcla de Fútbol y Salud Mental)
+        const allQuestions = [
+            { text: "¿El fútbol femenino fue prohibido en países como Inglaterra y Brasil por casi 50 años?", ans: true },
+            { text: "¿Marta Vieira da Silva tiene más goles en Mundiales que Pelé o Messi?", ans: true },
+            { text: "¿El primer Mundial Oficial de Fútbol Femenino se jugó en 1930?", ans: false },
+            { text: "¿En el fútbol femenino, la pelota es más chica y liviana que en el masculino?", ans: false },
+            { text: "¿Las 'Pioneras' argentinas le ganaron a Inglaterra 4-1 en el Mundial no oficial de 1971?", ans: true },
+            { text: "¿Alexia Putellas fue la primera mujer en ganar dos Balones de Oro consecutivos?", ans: true },
+            { text: "¿Un partido oficial de fútbol femenino dura 80 minutos?", ans: false },
+            { text: "¿El Día de la Futbolista Argentina se celebra el 21 de agosto?", ans: true },
+            { text: "¿La Copa Mundial Femenina de 2023 se jugó en Argentina?", ans: false },
+            { text: "¿Estefanía Banini fue capitana de la Selección Argentina?", ans: true },
+            { text: "¿Megan Rapinoe es conocida solo por sus goles y nunca habló de igualdad de derechos?", ans: false },
+            { text: "¿El primer club de fútbol femenino registrado en la historia se fundó en 1895?", ans: true },
+            { text: "¿El arco en el fútbol femenino es más bajo que en el masculino?", ans: false },
+            { text: "¿Río Turbio tiene la Copa Challenger más apasionante de la región?", ans: true },
+            { text: "¿El offside (fuera de juego) no existe en el fútbol femenino?", ans: false },
+            { text: "¿Sentir nervios antes de un partido significa que no estás preparada mentalmente?", ans: false },
+            { text: "¿La 'visualización' es una técnica real donde te imaginás haciendo un gol para mejorar el rendimiento?", ans: true },
+            { text: "¿Llorar después de una derrota indica que la jugadora es psicológicamente débil?", ans: false },
+            { text: "¿El estrés crónico puede aumentar las posibilidades de sufrir lesiones musculares?", ans: true },
+            { text: "¿Si una compañera tiene un ataque de pánico en el vestuario, lo mejor es decirle 'calmate'?", ans: false },
+            { text: "¿Hablar de tus problemas de salud mental te hace una jugadora más débil?", ans: false },
+            { text: "¿La motivación 'intrínseca' es jugar por el amor al deporte, sin importar los premios?", ans: true },
+            { text: "¿Ignorar el cansancio mental te hace más fuerte a largo plazo?", ans: false },
+            { text: "¿El 'Síndrome del Impostor' es sentir que tus logros fueron por suerte y no por tu talento?", ans: true },
+            { text: "¿Ir al psicólogo deportivo es solo para jugadoras que están por dejar el fútbol?", ans: false },
+            { text: "¿Dormir menos de 6 horas afecta negativamente el tiempo de reacción en la cancha?", ans: true },
+            { text: "¿El 'Burnout' es cuando sentís un agotamiento físico y mental extremo hacia el deporte?", ans: true },
+            { text: "¿La frustración al errar un penal dura menos si insultás al árbitro?", ans: false },
+            { text: "¿Tener un 'ritual' o cábala antes de jugar ayuda a reducir la ansiedad precompetitiva?", ans: true },
+            { text: "¿Para tener buena salud mental hay que estar siempre feliz y positiva?", ans: false },
+            { text: "¿Las mujeres se lesionan más las rodillas que los hombres por cuestiones anatómicas?", ans: true },
+            { text: "¿Respirar por la boca durante el ejercicio ayuda a regular mejor la ansiedad?", ans: false },
+            { text: "¿La empatía es la capacidad de sentir exactamente lo mismo que siente el otro?", ans: false },
+            { text: "¿Comer azúcar justo antes de entrar a la cancha te da energía mental para todo el partido?", ans: false },
+            { text: "¿El cerebro humano no distingue entre un recuerdo vívido y algo que está pasando ahora mismo?", ans: true },
+            { text: "¿Las emociones negativas como el enojo no sirven para nada y hay que bloquearlas?", ans: false },
+            { text: "¿Si transpirás mucho por los nervios, significa que tenés un trastorno de ansiedad?", ans: false },
+            { text: "¿Pedir el cambio porque estás 'quemada' de la cabeza es una falta de respeto al equipo?", ans: false },
+            { text: "¿El apoyo de la hinchada realmente cambia la química del cerebro de la jugadora?", ans: true },
+            { text: "¿Un partido empatado genera más desgaste mental que un partido ganado por goleada?", ans: true },
+            { text: "¿Las tarjetas amarilla y roja se inventaron recién en el año 1990?", ans: false },
+            { text: "¿La resiliencia es la capacidad de reponerse a situaciones traumáticas o difíciles?", ans: true },
+            { text: "¿El fútbol femenino estuvo prohibido en Argentina durante la dictadura militar?", ans: false },
+            { text: "¿Una buena comunicación en la cancha reduce los niveles de cortisol (hormona del estrés)?", ans: true },
+            { text: "¿Si sos suplente no necesitás entrenar la mente tanto como la titular?", ans: false }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+        let currentUser = null;
+        
+        let selectedQuestions = [];
+        let questionStartTime = 0;
+        let allResultsData = []; 
+
+        const ADMIN_PIN = "5259";
+        let pendingAction = null;
+
+        window.irAlInicio = () => {
+            try {
+                window.location.href = 'index.html';
+            } catch(e) {
+                console.warn("Navegación simulada en vista previa. En Vercel irá a index.html");
+            }
+        };
+
+        window.safeAction = (action) => {
+            pendingAction = action;
+            document.getElementById('pin-modal').classList.remove('hide');
+            document.getElementById('pin-input').focus();
+        };
+
+        window.checkPin = () => {
+            const input = document.getElementById('pin-input');
+            if (input.value === ADMIN_PIN) {
+                closePinModal();
+                if (pendingAction === 'stream') switchRole('stream');
+                else if (pendingAction === 'sorteo') iniciarSorteo();
+            } else {
+                input.value = "";
+                input.classList.add('animate-pulse');
+                setTimeout(() => input.classList.remove('animate-pulse'), 500);
+            }
+        };
+
+        window.closePinModal = () => {
+            document.getElementById('pin-modal').classList.add('hide');
+            document.getElementById('pin-input').value = "";
+            pendingAction = null;
+        };
+
+        // --- SISTEMA DE SORTEO ---
+        let sorteoInterval;
+        
+        window.iniciarSorteo = () => {
+            if(allResultsData.length <= 2) {
+                const err = document.getElementById('sorteo-error');
+                err.classList.remove('hide');
+                setTimeout(() => err.classList.add('
