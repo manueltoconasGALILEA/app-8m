@@ -257,32 +257,57 @@
         
         <!-- STREAM PANTALLA GIGANTE -->
         <section id="view-stream" class="fixed inset-0 bg-[#faf9f6] z-[150] hide flex flex-col lg:flex-row overflow-hidden">
-            <div class="lg:w-1/3 p-10 flex flex-col justify-between bg-white border-r border-stone-100 relative shrink-0 z-10 shadow-2xl">
+            <div class="lg:w-1/3 p-8 flex flex-col justify-between bg-white border-r border-stone-100 relative shrink-0 z-10 shadow-2xl overflow-y-auto">
                 <div>
-                    <div class="flex gap-4 items-center mb-8">
-                        <img src="logo.png" alt="Logo" class="h-16 w-auto object-contain" onerror="this.style.display='none'">
+                    <!-- Logo y Salir -->
+                    <div class="flex gap-4 items-center mb-6">
+                        <img src="logo.png" alt="Logo" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
                         <button onclick="switchTab('inicio')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200 transition">Salir del Stream</button>
                     </div>
-                    <p class="text-xs font-bold text-purple-600 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
-                    <h1 class="text-6xl font-brand italic mb-2 leading-none tracking-tighter">Festival <span class="text-gradient">Nosotras</span></h1>
-                    <p class="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-10 bg-stone-100 inline-block px-3 py-1 rounded">Somos Centro de Día El Árbol 🌳</p>
                     
-                    <div class="bg-stone-900 rounded-[3rem] p-10 text-center text-white shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500 opacity-20 blur-3xl"></div>
-                        <span class="block text-purple-300 font-bold uppercase text-xs mb-2 tracking-widest relative z-10">Mensajes en Vivo</span>
-                        <span id="stream-counter" class="text-[8rem] font-black tracking-tighter tabular-nums leading-none block mb-6 relative z-10">0</span>
+                    <p class="text-[10px] font-bold text-purple-600 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
+                    
+                    <!-- Título y Botón Actualizar (En la misma línea) -->
+                    <div class="flex items-center justify-between mb-2">
+                        <h1 class="text-5xl lg:text-6xl font-brand italic leading-none tracking-tighter">Festival <span class="text-gradient">Nosotras</span></h1>
+                        <button id="btn-actualizar-stream" onclick="forceStreamRefresh()" class="px-3 py-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm shrink-0">
+                            🔄 Actualizar
+                        </button>
+                    </div>
+                    
+                    <p class="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-8 bg-stone-100 inline-block px-3 py-1 rounded">Somos Centro de Día El Árbol 🌳</p>
+                    
+                    <!-- TABLERO DE TRIVIA (Exclusivo) -->
+                    <div class="bg-stone-900 rounded-[2.5rem] p-8 text-center text-white shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500 opacity-20 blur-3xl"></div>
                         
+                        <!-- Contador de Jugadores (Principal) -->
+                        <span class="block text-emerald-300 font-bold uppercase text-sm mb-2 tracking-widest relative z-10">Jugadores Trivia</span>
+                        <span id="stream-trivia-counter" class="text-[6rem] font-black tracking-tighter tabular-nums leading-none block mb-6 relative z-10">0</span>
+                        
+                        <!-- Top 1 Ranking (Nuevo) -->
                         <div class="border-t border-white/20 pt-6 mt-6 relative z-10">
-                            <span class="block text-emerald-300 font-bold uppercase text-xs mb-2 tracking-widest">Jugadores Trivia</span>
-                            <span id="stream-trivia-counter" class="text-4xl font-black tabular-nums">0</span>
+                            <span class="block text-yellow-400 font-bold uppercase text-xs mb-2 tracking-widest">🏆 Líder del Ranking</span>
+                            <span id="stream-top-player" class="text-3xl font-black truncate block mt-2 text-white">Esperando...</span>
+                            <span id="stream-top-score" class="text-sm font-bold text-yellow-200 block mt-1 uppercase tracking-widest">- PTS</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative bg-stone-50/50" id="stream-feed">
-                <!-- CUADRÍCULA STREAM -->
-                <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8"></div>
+            <!-- CUADRÍCULA DE MENSAJES (FEED) -->
+            <div class="flex-1 p-8 overflow-y-auto no-scrollbar relative bg-stone-50/50" id="stream-feed">
+                <!-- Sorteo Overlay (Oculto por defecto) -->
+                <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
+                    <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
+                    <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-emerald-50 opacity-50"></div>
+                        <span id="sorteo-name" class="text-6xl font-black uppercase italic text-stone-800 text-center relative z-10">¿QUIÉN GANARÁ?</span>
+                    </div>
+                    <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
+                </div>
+
+                <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-6"></div>
             </div>
         </section>
 
@@ -432,6 +457,17 @@
                 viewJug.classList.remove('hide');
                 viewMsj.classList.add('hide');
             }
+        };
+
+        // --- FUNCION ACTUALIZAR STREAM (MANUAL) ---
+        window.forceStreamRefresh = () => {
+            const btn = document.getElementById('btn-actualizar-stream');
+            if(btn) {
+                btn.innerHTML = '🔄 <span class="animate-pulse">Actualizando...</span>';
+                setTimeout(() => { btn.innerHTML = '🔄 Actualizar'; }, 1000);
+            }
+            if(window.renderFeed) window.renderFeed();
+            if(window.updateStreamTopPlayer) window.updateStreamTopPlayer();
         };
 
         // --- Lógica Intentos Trivia ---
@@ -668,8 +704,6 @@
                 window.allPases = [];
                 snap.forEach(doc => window.allPases.push({id: doc.id, ...doc.data()}));
                 window.allPases.sort((a,b) => b.timestamp - a.timestamp);
-                const elCounter = document.getElementById('stream-counter');
-                if (elCounter) elCounter.textContent = window.allPases.length;
                 if(window.renderFeed) window.renderFeed();
             }, (err) => { console.error("Error cargando pases:", err); });
 
@@ -684,15 +718,36 @@
             const triviaRef = collection(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados');
             onSnapshot(triviaRef, (snap) => {
                 const results = [];
-                snap.forEach(doc => results.push({id: doc.id, ...doc.data()})); // Aseguramos capturar el ID
+                snap.forEach(doc => results.push({id: doc.id, ...doc.data()})); 
                 results.sort((a,b) => b.score - a.score);
                 window.allResultsData = results; 
+                
+                // Actualiza contador de Stream
                 const elTrivia = document.getElementById('stream-trivia-counter');
                 if (elTrivia) elTrivia.textContent = results.length;
+                
+                // Actualiza el Top Player de Stream en vivo
+                if(window.updateStreamTopPlayer) window.updateStreamTopPlayer();
+
                 if(window.renderLeaderboard) window.renderLeaderboard(results);
                 if(window.renderAdminJugadores && window.currentActiveView === 'admin') window.renderAdminJugadores();
             }, (err) => { console.error("Error cargando trivia:", err); });
         }
+
+        // --- ACTUALIZAR EL JUGADOR #1 EN EL STREAM ---
+        window.updateStreamTopPlayer = () => {
+            const topPlayerNameEl = document.getElementById('stream-top-player');
+            const topPlayerScoreEl = document.getElementById('stream-top-score');
+
+            if (window.allResultsData && window.allResultsData.length > 0) {
+                const topPlayer = window.allResultsData[0]; 
+                if (topPlayerNameEl) topPlayerNameEl.textContent = topPlayer.name;
+                if (topPlayerScoreEl) topPlayerScoreEl.textContent = topPlayer.score + " pts";
+            } else {
+                if (topPlayerNameEl) topPlayerNameEl.textContent = "Esperando...";
+                if (topPlayerScoreEl) topPlayerScoreEl.textContent = "- PTS";
+            }
+        };
 
         startDB();
 
@@ -732,7 +787,6 @@
             });
         };
 
-        // RENDERIZAR JUGADORES EN PANEL DE ADMIN
         window.renderAdminJugadores = () => {
             const list = document.getElementById('admin-jugadores-list');
             if(!list) return;
