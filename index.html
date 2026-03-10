@@ -112,6 +112,7 @@
         <!-- ========================================== -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[75vh] flex flex-col justify-center items-center w-full">
+                <!-- max-w-xl centra y achica el formulario en compus -->
                 <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-stone-100 mb-8 max-w-xl mx-auto w-full">
                     <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Dejá tu mensaje</h2>
                     <p class="text-sm md:text-base text-stone-500 mb-8">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
@@ -145,6 +146,7 @@
         <!-- ========================================== -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[75vh] flex flex-col justify-center items-center w-full">
+                <!-- max-w-2xl centra la trivia en pantallas grandes -->
                 <div class="max-w-2xl mx-auto w-full">
                     <div class="bg-gradient-brand p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white text-center mb-6">
                         <span class="text-6xl block mb-4">🏆</span>
@@ -179,15 +181,12 @@
                     <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-10">
                         <h3 class="text-4xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
-                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos (se conserva tu mejor puntaje).</p>
+                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos.</p>
                         <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm inline-block px-12 mb-10">
-                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Obtenido</p>
+                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Total</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
                         </div>
-                        <div class="flex flex-col gap-3">
-                            <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
-                            <button onclick="switchTab('trivia')" class="w-full py-4 text-purple-700 font-bold bg-purple-50 rounded-2xl hover:bg-purple-100 transition">VOLVER A JUGAR</button>
-                        </div>
+                        <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
                     </div>
                 </div>
             </div>
@@ -197,6 +196,7 @@
         <!-- VISTA 4: RANKING                           -->
         <!-- ========================================== -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
+            <!-- max-w-3xl centra la lista de manera elegante -->
             <div class="min-h-[75vh] flex flex-col justify-start md:justify-center items-center w-full pt-4 md:pt-0">
                 <div class="max-w-3xl mx-auto w-full">
                     <div class="text-center mb-8">
@@ -262,9 +262,23 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="mt-8 space-y-3">
+                    <button onclick="iniciarSorteo()" class="w-full py-4 bg-purple-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-purple-500 transition">🎲 Sorteo Trivia</button>
+                    <p id="sorteo-error" class="text-rose-500 font-bold text-xs text-center hide">¡Mínimo 3 jugadores necesarios!</p>
+                </div>
             </div>
 
             <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative" id="stream-feed">
+                <!-- Sorteo Overlay (Oculto por defecto) -->
+                <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
+                    <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
+                    <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl">
+                        <span id="sorteo-name" class="text-6xl font-black uppercase italic text-stone-300 text-center">¿QUIÉN GANARÁ?</span>
+                    </div>
+                    <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
+                </div>
+
                 <!-- CUADRÍCULA STREAM -->
                 <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8"></div>
             </div>
