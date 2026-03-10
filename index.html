@@ -40,6 +40,7 @@
     <script>
         window.onload = function() {
             setTimeout(function() { if (typeof window.safeSwitchView === 'undefined') document.getElementById('local-warning').classList.remove('hide'); }, 1000);
+            if(window.actualizarIntentosUI) window.actualizarIntentosUI();
         };
     </script>
 
@@ -111,7 +112,6 @@
         <!-- ========================================== -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[75vh] flex flex-col justify-center items-center w-full">
-                <!-- max-w-xl centra y achica el formulario en compus -->
                 <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-stone-100 mb-8 max-w-xl mx-auto w-full">
                     <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Dejá tu mensaje</h2>
                     <p class="text-sm md:text-base text-stone-500 mb-8">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
@@ -145,7 +145,6 @@
         <!-- ========================================== -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[75vh] flex flex-col justify-center items-center w-full">
-                <!-- max-w-2xl centra la trivia en pantallas grandes -->
                 <div class="max-w-2xl mx-auto w-full">
                     <div class="bg-gradient-brand p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white text-center mb-6">
                         <span class="text-6xl block mb-4">🏆</span>
@@ -154,7 +153,9 @@
                     </div>
 
                     <!-- Pantalla Inicio Trivia -->
-                    <div id="trivia-start" class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-stone-100 text-center">
+                    <div id="trivia-start" class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-stone-100 text-center relative">
+                        <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4">Intentos disponibles: 2 de 2</p>
+                        
                         <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-5 rounded-2xl bg-stone-50 mb-4 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg">
                         <p id="name-error" class="text-rose-500 font-bold text-sm hide mb-4">¡Ingresá tu nombre para jugar!</p>
                         <button onclick="startTrivia()" class="w-full py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR!</button>
@@ -178,12 +179,15 @@
                     <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-10">
                         <h3 class="text-4xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
-                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos.</p>
+                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos (se conserva tu mejor puntaje).</p>
                         <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm inline-block px-12 mb-10">
-                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Total</p>
+                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Obtenido</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
                         </div>
-                        <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
+                            <button onclick="switchTab('trivia')" class="w-full py-4 text-purple-700 font-bold bg-purple-50 rounded-2xl hover:bg-purple-100 transition">VOLVER A JUGAR</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -194,7 +198,6 @@
         <!-- ========================================== -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[75vh] flex flex-col justify-start md:justify-center items-center w-full pt-4 md:pt-0">
-                <!-- max-w-3xl centra la lista de manera elegante -->
                 <div class="max-w-3xl mx-auto w-full">
                     <div class="text-center mb-8">
                         <h2 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-900 leading-none">Ranking Oficial</h2>
@@ -206,6 +209,30 @@
                             <p class="text-center text-stone-400 text-sm py-8">Cargando posiciones...</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VISTA 5: SORTEO (RESTRINGIDA POR PIN)      -->
+        <!-- ========================================== -->
+        <section id="view-sorteo" class="animate-view px-5 pb-5 hide">
+            <div class="min-h-[75vh] flex flex-col justify-center items-center w-full">
+                <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border-4 border-purple-200 text-center w-full max-w-2xl mx-auto">
+                    <span class="text-6xl mb-4 block">🎁</span>
+                    <h2 class="text-4xl md:text-5xl font-brand italic mb-4 text-stone-800">Sorteo Oficial</h2>
+                    <p class="text-stone-500 mb-8 font-medium">Participan todas las personas rankeadas en la Trivia.</p>
+
+                    <!-- CAJA DE LA RULETA -->
+                    <div class="bg-stone-50 p-8 rounded-[2rem] mb-8 h-48 flex items-center justify-center shadow-inner relative overflow-hidden border border-stone-200">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-emerald-50 opacity-50"></div>
+                        <span id="sorteo-name-tab" class="text-3xl md:text-5xl font-black uppercase italic text-stone-300 text-center relative z-10 transition-all duration-200">¿QUIÉN GANARÁ?</span>
+                    </div>
+
+                    <button onclick="iniciarSorteoTab()" class="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition">
+                        🎲 GIRAR RULETA
+                    </button>
+                    <p id="sorteo-tab-error" class="text-rose-500 font-bold text-sm mt-4 hide">¡No hay participantes en el ranking aún!</p>
                 </div>
             </div>
         </section>
@@ -235,23 +262,9 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="mt-8 space-y-3">
-                    <button onclick="iniciarSorteo()" class="w-full py-4 bg-purple-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-purple-500 transition">🎲 Sorteo Trivia</button>
-                    <p id="sorteo-error" class="text-rose-500 font-bold text-xs text-center hide">¡Mínimo 3 jugadores necesarios!</p>
-                </div>
             </div>
 
             <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative" id="stream-feed">
-                <!-- Sorteo Overlay -->
-                <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
-                    <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
-                    <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl">
-                        <span id="sorteo-name" class="text-6xl font-black uppercase italic text-stone-300 text-center">¿QUIÉN GANARÁ?</span>
-                    </div>
-                    <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
-                </div>
-
                 <!-- CUADRÍCULA STREAM -->
                 <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8"></div>
             </div>
@@ -271,32 +284,38 @@
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR (4 BOTONES VISIBLES) -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES VISIBLES) -->
     <nav id="mobile-nav" class="bg-white border-t border-stone-200 nav-shadow z-50 pb-safe w-full">
         <!-- El contenedor interior limita el ancho en navegadores de PC -->
-        <div class="max-w-lg mx-auto flex justify-between items-center px-2 py-3 w-full">
+        <div class="max-w-xl mx-auto flex justify-between items-center px-2 py-3 w-full">
             <!-- 1. Inicio -->
-            <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-purple-700 bg-purple-50 transition-all">
+            <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-purple-700 bg-purple-50 transition-all">
                 <span class="text-2xl leading-none">🏟️</span>
                 <span class="text-[10px] font-black uppercase tracking-tight">Inicio</span>
             </button>
 
             <!-- 2. Mensaje -->
-            <button onclick="switchTab('mensaje')" id="tab-mensaje" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <button onclick="switchTab('mensaje')" id="tab-mensaje" class="nav-btn w-1/5 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
                 <span class="text-2xl leading-none">💜</span>
                 <span class="text-[10px] font-black uppercase tracking-tight">Mensaje</span>
             </button>
 
             <!-- 3. Trivia -->
-            <button onclick="switchTab('trivia')" id="tab-trivia" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <button onclick="switchTab('trivia')" id="tab-trivia" class="nav-btn w-1/5 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
                 <span class="text-2xl leading-none">🏆</span>
                 <span class="text-[10px] font-black uppercase tracking-tight">Trivia</span>
             </button>
 
             <!-- 4. Ranking -->
-            <button onclick="switchTab('ranking')" id="tab-ranking" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <button onclick="switchTab('ranking')" id="tab-ranking" class="nav-btn w-1/5 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
                 <span class="text-2xl leading-none">📊</span>
                 <span class="text-[10px] font-black uppercase tracking-tight">Ranking</span>
+            </button>
+
+            <!-- 5. Sorteo (Protegido) -->
+            <button onclick="safeSwitchView('sorteo')" id="tab-sorteo" class="nav-btn w-1/5 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+                <span class="text-2xl leading-none">🎁</span>
+                <span class="text-[10px] font-black uppercase tracking-tight">Sorteo</span>
             </button>
         </div>
     </nav>
@@ -332,6 +351,14 @@
         };
 
         window.switchTab = (tabId) => {
+            // Actualizar intentos si entra a trivia
+            if(tabId === 'trivia' && window.actualizarIntentosUI) {
+                window.actualizarIntentosUI();
+                document.getElementById('trivia-start').classList.remove('hide');
+                document.getElementById('trivia-quiz').classList.add('hide');
+                document.getElementById('trivia-end').classList.add('hide');
+            }
+
             document.querySelectorAll('main > section').forEach(s => s.classList.add('hide'));
             document.getElementById('view-' + tabId).classList.remove('hide');
             
@@ -356,6 +383,19 @@
             window.currentActiveView = tabId;
             if(window.renderFeed) window.renderFeed();
             document.getElementById('main-content').scrollTop = 0;
+        };
+
+        // --- Lógica Intentos Trivia ---
+        window.actualizarIntentosUI = () => {
+            let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
+            let remaining = Math.max(0, 2 - attempts);
+            const el = document.getElementById('attempts-counter');
+            if(el) {
+                el.textContent = `Intentos disponibles: ${remaining} de 2`;
+                if (remaining === 0) {
+                    el.classList.replace('text-purple-600', 'text-rose-600');
+                }
+            }
         };
 
         // --- Lógica Trivia ---
@@ -438,11 +478,22 @@
         ];
 
         window.startTrivia = () => {
+            let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
+            if (attempts >= 2) {
+                const err = document.getElementById('name-error');
+                err.textContent = "¡Ya utilizaste tus 2 intentos permitidos!";
+                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 4000); 
+                return;
+            }
+
             const nameInput = document.getElementById('player-name');
             if(!nameInput.value.trim()) {
                 const err = document.getElementById('name-error');
-                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
+                err.textContent = "¡Ingresá tu nombre para jugar!";
+                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); 
+                return;
             }
+            
             window.playerName = nameInput.value.trim();
             document.getElementById('trivia-start').classList.add('hide');
             document.getElementById('trivia-quiz').classList.remove('hide');
@@ -470,32 +521,37 @@
         };
 
         window.finishTrivia = () => {
+            // Guardar que consumió un intento
+            let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
+            localStorage.setItem('triviaAttempts', attempts + 1);
+            window.actualizarIntentosUI();
+
             document.getElementById('trivia-quiz').classList.add('hide');
             document.getElementById('trivia-end').classList.remove('hide');
             document.getElementById('final-score').textContent = window.score;
             if(window.guardarPuntajeDB) window.guardarPuntajeDB();
         };
 
-        // --- Lógica Sorteo ---
-        window.sorteoInterval = null;
-        window.iniciarSorteo = () => {
-            if(!window.allResultsData || window.allResultsData.length <= 2) {
-                const err = document.getElementById('sorteo-error');
+        // --- Lógica Sorteo (Nueva Pestaña) ---
+        window.sorteoTabInterval = null;
+        window.iniciarSorteoTab = () => {
+            if(!window.allResultsData || window.allResultsData.length === 0) {
+                const err = document.getElementById('sorteo-tab-error');
                 err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
             }
-            document.getElementById('sorteo-overlay').classList.remove('hide');
-            const nameDisplay = document.getElementById('sorteo-name');
+            const nameDisplay = document.getElementById('sorteo-name-tab');
             nameDisplay.classList.add('animate-roulette', 'text-stone-300');
             nameDisplay.classList.remove('text-purple-700', 'scale-125');
 
-            const eligible = window.allResultsData.slice(2);
+            // Elegimos de TODOS los rankeados
+            const eligible = window.allResultsData;
             let counter = 0;
-            window.sorteoInterval = setInterval(() => {
+            window.sorteoTabInterval = setInterval(() => {
                 const randomPlayer = eligible[Math.floor(Math.random() * eligible.length)];
                 nameDisplay.textContent = randomPlayer.name;
                 counter++;
                 if(counter > 40) {
-                    clearInterval(window.sorteoInterval);
+                    clearInterval(window.sorteoTabInterval);
                     const winner = eligible[Math.floor(Math.random() * eligible.length)];
                     nameDisplay.textContent = "🎉 " + winner.name + " 🎉";
                     nameDisplay.classList.remove('animate-roulette', 'text-stone-300');
@@ -503,7 +559,6 @@
                 }
             }, 100);
         };
-        window.cerrarSorteo = () => { document.getElementById('sorteo-overlay').classList.add('hide'); clearInterval(window.sorteoInterval); };
     </script>
 
     <!-- SCRIPT DE FIREBASE GLOBAL -->
@@ -589,6 +644,17 @@
 
         window.guardarPuntajeDB = async () => {
             if(!currentUser) return;
+
+            // Revisamos si ya tiene un puntaje anterior guardado en la DB
+            const puntajeExistente = window.allResultsData.find(r => r.userId === currentUser.uid);
+            
+            // Si tiene un puntaje previo y es MAYOR o IGUAL al actual, no sobreescribimos
+            if (puntajeExistente && puntajeExistente.score >= window.score) {
+                console.log("Se conservó el puntaje anterior por ser más alto.");
+                return;
+            }
+
+            // Si es su primer intento o sacó un puntaje más alto, lo guardamos
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados', currentUser.uid);
             await setDoc(ref, { 
                 name: window.playerName, 
@@ -632,7 +698,6 @@
 
         function crearCard(p, modo) {
             const card = document.createElement('div');
-            // AGREGADO "mb-6 break-inside-avoid" PARA QUE FUNCIONE PERFECTO EN LA CUADRÍCULA DE NOTEBOOKS
             card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 flex flex-col card-enter mb-6 break-inside-avoid inline-block w-full';
             
             const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-auto object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
