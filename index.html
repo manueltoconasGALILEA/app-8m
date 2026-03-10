@@ -35,6 +35,13 @@
 </head>
 <body class="h-screen w-full flex flex-col overflow-hidden selection:bg-purple-200 relative">
 
+    <!-- PANTALLA DE TRANSICIÓN CON LOGO TRANSPARENTE -->
+    <div id="transition-overlay" class="fixed inset-0 bg-[#f8f7f4] z-[300] flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+        <!-- mix-blend-multiply hace que el fondo blanco de la foto desaparezca mágicamente -->
+        <img src="logo.png" alt="Centro de Día El Árbol" class="h-40 md:h-56 w-auto object-contain mix-blend-multiply animate-bounce" onerror="this.style.display='none'">
+        <p class="mt-6 text-purple-800 font-black tracking-[0.3em] uppercase text-xs md:text-sm animate-pulse">Cargando...</p>
+    </div>
+
     <!-- FONDO DECORATIVO PREMIUM PARA NOTEBOOKS -->
     <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#f8f7f4]">
         <div class="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-300/30 rounded-full blur-[120px]"></div>
@@ -42,7 +49,7 @@
         <div class="absolute top-[30%] left-[30%] w-[400px] h-[400px] bg-rose-200/20 rounded-full blur-[100px] hidden md:block"></div>
     </div>
 
-    <!-- AVISO DE EMERGENCIA SI SE ABRE DESDE WHATSAPP / LOCAL -->
+    <!-- AVISO DE EMERGENCIA SI SE ABRE DESDE LOCAL -->
     <div id="local-warning" class="fixed top-0 left-0 w-full bg-rose-600 text-white p-6 text-center z-[200] shadow-2xl hide">
         <p class="font-black text-xl mb-2">⚠️ ¡Aviso Importante!</p>
         <p class="font-medium text-sm leading-tight">Estás abriendo este archivo directamente desde tus descargas o chat. Por seguridad, los botones están bloqueados.<br><br><b>Abre tu enlace oficial en el navegador web (ej: Chrome/Safari).</b></p>
@@ -92,7 +99,7 @@
                 <p class="text-[10px] md:text-xs font-black text-purple-900 tracking-wider uppercase">Somos Centro de Día El Árbol 🌳</p>
             </div>
         </div>
-        <img src="logo.png" alt="Logo" class="h-12 md:h-20 w-auto object-contain drop-shadow-md" onerror="this.style.display='none'">
+        <img src="logo.png" alt="Logo" class="h-12 md:h-20 w-auto object-contain mix-blend-multiply drop-shadow-md" onerror="this.style.display='none'">
     </header>
 
     <!-- ÁREA PRINCIPAL (SCROLLABLE) -->
@@ -121,7 +128,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 2: FORMULARIO (MENSAJE) PANORÁMICO   -->
+        <!-- VISTA 2: FORMULARIO (MENSAJE)              -->
         <!-- ========================================== -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
@@ -209,7 +216,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 4: RANKING (2 COLUMNAS EN PC)        -->
+        <!-- VISTA 4: RANKING                           -->
         <!-- ========================================== -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
@@ -257,39 +264,41 @@
         
         <!-- STREAM PANTALLA GIGANTE -->
         <section id="view-stream" class="fixed inset-0 bg-[#faf9f6] z-[150] hide flex flex-col lg:flex-row overflow-hidden">
+            <!-- CAJA IZQUIERDA STREAM (SOLO TRIVIA Y LÍDER) -->
             <div class="lg:w-1/3 p-8 flex flex-col justify-between bg-white border-r border-stone-100 relative shrink-0 z-10 shadow-2xl overflow-y-auto">
                 <div>
                     <!-- Logo y Salir -->
                     <div class="flex gap-4 items-center mb-6">
-                        <img src="logo.png" alt="Logo" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
+                        <img src="logo.png" alt="Logo" class="h-12 w-auto object-contain mix-blend-multiply" onerror="this.style.display='none'">
                         <button onclick="switchTab('inicio')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200 transition">Salir del Stream</button>
                     </div>
                     
                     <p class="text-[10px] font-bold text-purple-600 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
                     
-                    <!-- Título y Botón Actualizar (En la misma línea) -->
+                    <!-- Título y Botón Actualizar -->
                     <div class="flex items-center justify-between mb-2">
                         <h1 class="text-5xl lg:text-6xl font-brand italic leading-none tracking-tighter">Festival <span class="text-gradient">Nosotras</span></h1>
-                        <button id="btn-actualizar-stream" onclick="forceStreamRefresh()" class="px-3 py-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm shrink-0">
+                        <button id="btn-actualizar-stream" onclick="forceStreamRefresh()" class="px-4 py-2.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 shadow-sm shrink-0">
                             🔄 Actualizar
                         </button>
                     </div>
                     
                     <p class="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-8 bg-stone-100 inline-block px-3 py-1 rounded">Somos Centro de Día El Árbol 🌳</p>
                     
-                    <!-- TABLERO DE TRIVIA (Exclusivo) -->
-                    <div class="bg-stone-900 rounded-[2.5rem] p-8 text-center text-white shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500 opacity-20 blur-3xl"></div>
+                    <!-- CAJA NEGRA EXCLUSIVA TRIVIA -->
+                    <div class="bg-stone-900 rounded-[3rem] p-10 text-center text-white shadow-2xl relative overflow-hidden mt-4">
+                        <div class="absolute top-0 left-0 w-40 h-40 bg-emerald-500 opacity-20 blur-3xl"></div>
+                        <div class="absolute bottom-0 right-0 w-32 h-32 bg-purple-500 opacity-20 blur-3xl"></div>
                         
-                        <!-- Contador de Jugadores (Principal) -->
+                        <!-- Jugadores Trivia -->
                         <span class="block text-emerald-300 font-bold uppercase text-sm mb-2 tracking-widest relative z-10">Jugadores Trivia</span>
-                        <span id="stream-trivia-counter" class="text-[6rem] font-black tracking-tighter tabular-nums leading-none block mb-6 relative z-10">0</span>
+                        <span id="stream-trivia-counter" class="text-[8rem] font-black tracking-tighter tabular-nums leading-none block mb-6 relative z-10">0</span>
                         
-                        <!-- Top 1 Ranking (Nuevo) -->
+                        <!-- Líder del Ranking en Vivo -->
                         <div class="border-t border-white/20 pt-6 mt-6 relative z-10">
-                            <span class="block text-yellow-400 font-bold uppercase text-xs mb-2 tracking-widest">🏆 Líder del Ranking</span>
-                            <span id="stream-top-player" class="text-3xl font-black truncate block mt-2 text-white">Esperando...</span>
-                            <span id="stream-top-score" class="text-sm font-bold text-yellow-200 block mt-1 uppercase tracking-widest">- PTS</span>
+                            <span class="block text-yellow-400 font-black uppercase text-xs mb-2 tracking-widest">🏆 LÍDER DEL RANKING</span>
+                            <span id="stream-top-player" class="text-4xl font-black truncate block mt-2 text-white">Esperando...</span>
+                            <span id="stream-top-score" class="text-lg font-bold text-yellow-200 block mt-1 uppercase tracking-widest">- PTS</span>
                         </div>
                     </div>
                 </div>
@@ -412,6 +421,28 @@
                 document.getElementById('trivia-end').classList.add('hide');
             }
 
+            // MOSTRAR PANTALLA DE TRANSICIÓN CON LOGO
+            const overlay = document.getElementById('transition-overlay');
+            if (overlay && tabId !== 'stream' && tabId !== 'admin') {
+                overlay.classList.remove('pointer-events-none');
+                overlay.style.opacity = '1';
+                
+                setTimeout(() => {
+                    ejecutarCambioDePestana(tabId);
+                    
+                    // Ocultar transición
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.classList.add('pointer-events-none');
+                    }, 300);
+                }, 500); // 500ms de pantalla de carga
+            } else {
+                // Si es stream o admin, va directo sin animacion de logo
+                ejecutarCambioDePestana(tabId);
+            }
+        };
+
+        function ejecutarCambioDePestana(tabId) {
             document.querySelectorAll('main > section').forEach(s => s.classList.add('hide'));
             document.getElementById('view-' + tabId).classList.remove('hide');
             
@@ -437,7 +468,7 @@
             if(window.renderFeed) window.renderFeed();
             if(tabId === 'admin' && window.renderAdminJugadores) window.renderAdminJugadores();
             document.getElementById('main-content').scrollTop = 0;
-        };
+        }
 
         // Lógica de Pestañas dentro de Moderación
         window.switchAdminTab = (tab) => {
@@ -828,6 +859,7 @@
             const card = document.createElement('div');
             card.className = 'bg-white/90 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-md border border-white flex flex-col card-enter mb-6 break-inside-avoid inline-block w-full hover:shadow-xl transition-shadow';
             
+            // SE LIMITÓ LA ALTURA DE LA IMAGEN A max-h-48 (12rem) PARA QUE NO EMPUJE EL TEXTO HACIA ABAJO
             const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-48 md:h-64 object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
             const likes = p.likes || 0;
             const respuestas = window.allRespuestas ? window.allRespuestas.filter(r => r.parentId === p.id) : [];
