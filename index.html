@@ -56,8 +56,8 @@
 
     <!-- SELECTOR DE VISTA (ADMIN / STREAM) -->
     <div id="mode-selector" class="fixed top-4 right-4 z-[100] flex gap-2 opacity-30 hover:opacity-100 transition-opacity">
-        <button onclick="safeSwitchView('stream')" title="Stream" class="p-2 bg-emerald-700 text-white rounded-xl shadow-lg border border-emerald-500 text-xs font-bold">🖥️ STREAM</button>
-        <button onclick="safeSwitchView('admin')" title="Moderación" class="p-2 bg-rose-700 text-white rounded-xl shadow-lg border border-rose-500 text-xs font-bold">🛠️ MOD</button>
+        <button onclick="safeSwitchView('stream')" title="Stream" class="p-2 bg-emerald-700 text-white rounded-xl shadow-lg border border-emerald-500 text-xs font-bold hover:bg-emerald-600 transition">🖥️ STREAM</button>
+        <button onclick="safeSwitchView('admin')" title="Moderación" class="p-2 bg-rose-700 text-white rounded-xl shadow-lg border border-rose-500 text-xs font-bold hover:bg-rose-600 transition">🛠️ MOD</button>
     </div>
 
     <!-- MODALES DE SEGURIDAD Y CONFIRMACIÓN -->
@@ -66,8 +66,8 @@
             <h3 class="text-xl font-black mb-2">Acceso Privado</h3>
             <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-3xl text-center py-3 bg-stone-100 rounded-xl mb-4 outline-none focus:border-purple-500 font-black tracking-widest">
             <div class="flex gap-2">
-                <button onclick="closePinModal()" class="flex-1 py-2 font-bold text-stone-400">Cancelar</button>
-                <button onclick="checkPin()" class="flex-1 py-2 bg-stone-900 text-white rounded-xl font-bold">Entrar</button>
+                <button onclick="closePinModal()" class="flex-1 py-2 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
+                <button onclick="checkPin()" class="flex-1 py-2 bg-stone-900 text-white rounded-xl font-bold hover:bg-black transition">Entrar</button>
             </div>
         </div>
     </div>
@@ -76,8 +76,8 @@
             <span class="text-4xl block mb-2">🗑️</span>
             <h3 class="text-xl font-black mb-2 text-stone-900">¿Borrar mensaje?</h3>
             <div class="flex gap-2 mt-6">
-                <button onclick="closeConfirmModal()" class="flex-1 py-2 font-bold text-stone-400">Cancelar</button>
-                <button id="btn-confirm-delete" class="flex-1 py-2 bg-rose-600 text-white rounded-xl font-bold">Borrar</button>
+                <button onclick="closeConfirmModal()" class="flex-1 py-2 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
+                <button id="btn-confirm-delete" class="flex-1 py-2 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition">Borrar</button>
             </div>
         </div>
     </div>
@@ -123,17 +123,22 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 2: FORMULARIO (MENSAJE)              -->
+        <!-- VISTA 2: FORMULARIO (MENSAJE) PANORÁMICO   -->
         <!-- ========================================== -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
-                <!-- max-w-2xl para que sea más ancho en la compu -->
-                <div class="bg-white/90 backdrop-blur-md p-6 md:p-12 rounded-[3rem] shadow-xl border border-white mb-8 max-w-2xl mx-auto w-full">
-                    <h2 class="text-3xl md:text-5xl font-brand italic mb-2 text-stone-900 leading-none">Dejá tu mensaje</h2>
-                    <p class="text-sm md:text-base text-stone-500 mb-8 font-medium">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
+                <!-- max-w-4xl para que en PC se use el ancho a dos columnas -->
+                <div class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-[3rem] shadow-xl border border-white mb-4 max-w-4xl mx-auto w-full">
+                    <div class="mb-6 md:mb-8 text-center md:text-left">
+                        <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Dejá tu mensaje</h2>
+                        <p class="text-sm md:text-base text-stone-500 font-medium">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
+                    </div>
                     
-                    <form id="pase-form" class="space-y-6">
-                        <div class="relative group aspect-video bg-stone-50/80 rounded-[2rem] overflow-hidden border-2 border-dashed border-stone-200 hover:border-purple-400 transition-colors cursor-pointer" id="foto-trigger">
+                    <!-- FORMULARIO: 1 columna en celular, 2 columnas en PC -->
+                    <form id="pase-form" class="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8">
+                        
+                        <!-- Columna Izquierda: FOTO -->
+                        <div class="relative group aspect-square md:aspect-auto md:h-[300px] bg-stone-50/80 rounded-[2rem] overflow-hidden border-2 border-dashed border-stone-200 hover:border-purple-400 transition-colors cursor-pointer" id="foto-trigger">
                             <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-purple-600 transition-colors">
                                 <span class="text-5xl md:text-6xl mb-3 transition-transform group-hover:scale-110">📸</span>
@@ -142,69 +147,72 @@
                             <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-6 py-4 md:py-5 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-purple-500 border border-stone-100">
-                            <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-6 py-4 md:py-5 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-emerald-500 border border-stone-100">
+                        <!-- Columna Derecha: DATOS -->
+                        <div class="flex flex-col gap-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-purple-500 border border-stone-100">
+                                <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-emerald-500 border border-stone-100">
+                            </div>
+                            <textarea id="texto-mensaje" rows="4" placeholder="Tu mensaje de aliento..." class="flex-1 w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
+                            
+                            <button type="submit" id="submit-btn" class="w-full py-4 md:py-5 bg-stone-900 text-white rounded-2xl font-black text-sm md:text-lg tracking-wide shadow-2xl hover:bg-black active:scale-95 transition mt-auto">
+                                ENVIAR MENSAJE 💜
+                            </button>
                         </div>
-                        <textarea id="texto-mensaje" rows="3" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-6 py-4 md:py-5 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
-                        
-                        <button type="submit" id="submit-btn" class="w-full py-5 md:py-6 bg-stone-900 text-white rounded-2xl font-black text-sm md:text-lg tracking-wide shadow-2xl hover:bg-black active:scale-95 transition">
-                            ENVIAR MENSAJE 💜
-                        </button>
                     </form>
                 </div>
             </div>
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 3: TRIVIA (JUEGO)                    -->
+        <!-- VISTA 3: TRIVIA (JUEGO) COMPACTA           -->
         <!-- ========================================== -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
-                <!-- max-w-3xl para que luzca imponente en PC -->
+                <!-- max-w-3xl para que luzca imponente pero no se vaya de la pantalla -->
                 <div class="max-w-3xl mx-auto w-full">
-                    <div class="bg-gradient-brand p-8 md:p-14 rounded-[3rem] shadow-2xl text-white text-center mb-6 relative overflow-hidden">
+                    <div class="bg-gradient-brand p-6 md:p-10 rounded-[3rem] shadow-2xl text-white text-center mb-6 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-50"></div>
-                        <span class="text-6xl md:text-7xl block mb-4 relative z-10 drop-shadow-lg">🏆</span>
-                        <h2 class="text-4xl md:text-6xl font-brand italic mb-3 relative z-10">Trivia Challenger</h2>
-                        <p class="text-purple-100 text-sm md:text-lg relative z-10 font-medium">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
+                        <span class="text-5xl md:text-6xl block mb-2 relative z-10 drop-shadow-lg">🏆</span>
+                        <h2 class="text-3xl md:text-5xl font-brand italic mb-2 relative z-10">Trivia Challenger</h2>
+                        <p class="text-purple-100 text-sm relative z-10 font-medium">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
                     </div>
 
                     <!-- Pantalla Inicio Trivia -->
-                    <div id="trivia-start" class="bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-[3rem] shadow-xl border border-white text-center relative">
-                        <p id="attempts-counter" class="text-sm md:text-base font-black text-purple-600 uppercase tracking-widest mb-6 bg-purple-50 inline-block px-6 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
+                    <div id="trivia-start" class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white text-center relative">
+                        <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4 bg-purple-50 inline-block px-5 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
                         
-                        <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-5 md:p-6 rounded-2xl bg-stone-50 mb-6 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg md:text-xl border border-stone-100">
+                        <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 mb-5 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
                         <p id="name-error" class="text-rose-500 font-bold text-sm hide mb-4">¡Ingresá tu nombre para jugar!</p>
-                        <button onclick="startTrivia()" class="w-full py-5 md:py-6 bg-purple-700 text-white rounded-2xl font-black text-lg md:text-xl shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
+                        <button onclick="startTrivia()" class="w-full py-4 md:py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
                     </div>
 
                     <!-- Pantalla Preguntas -->
                     <div id="trivia-quiz" class="hide">
-                        <div class="flex justify-between items-center mb-6 px-4">
+                        <div class="flex justify-between items-center mb-4 px-4">
                             <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase bg-purple-100 px-4 py-2 rounded-full">Pregunta 1/10</span>
                             <span id="quiz-score" class="text-xs md:text-sm font-black text-emerald-700 uppercase bg-emerald-100 px-4 py-2 rounded-full">Puntos: 0</span>
                         </div>
-                        <div class="bg-white/90 backdrop-blur-sm p-8 md:p-14 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[220px] md:min-h-[280px] flex items-center justify-center text-center">
-                            <p id="question-text" class="font-bold text-2xl md:text-4xl leading-tight md:leading-snug text-stone-800">¿Pregunta aquí?</p>
+                        <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[200px] flex items-center justify-center text-center">
+                            <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800">¿Pregunta aquí?</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <button onclick="checkAnswer(true)" class="py-6 md:py-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl md:text-2xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">✅ VERDADERO</button>
-                            <button onclick="checkAnswer(false)" class="py-6 md:py-8 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl md:text-2xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">❌ FALSO</button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button onclick="checkAnswer(true)" class="py-5 md:py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">✅ VERDADERO</button>
+                            <button onclick="checkAnswer(false)" class="py-5 md:py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">❌ FALSO</button>
                         </div>
                     </div>
 
                     <!-- Pantalla Final -->
-                    <div id="trivia-end" class="hide text-center py-10 bg-white/90 backdrop-blur-md rounded-[3rem] shadow-xl border border-white mt-8 p-8 md:p-12">
-                        <h3 class="text-4xl md:text-6xl font-brand italic mb-2 text-stone-800">¡Finalizado! 🎉</h3>
-                        <p class="text-stone-500 text-base md:text-lg mb-8 font-medium">Tu puntaje se guardó en la base de datos (se conserva el más alto).</p>
-                        <div class="bg-stone-50 p-8 md:p-10 rounded-[2.5rem] border border-stone-100 shadow-inner inline-block px-12 md:px-20 mb-10 w-full md:w-auto">
-                            <p class="text-sm md:text-base font-bold text-stone-400 uppercase mb-2 tracking-widest">Puntaje Obtenido</p>
-                            <p id="final-score" class="text-7xl md:text-8xl font-black text-purple-700 leading-none">0</p>
+                    <div id="trivia-end" class="hide text-center py-8 bg-white/90 backdrop-blur-md rounded-[3rem] shadow-xl border border-white mt-6 p-8">
+                        <h3 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-800">¡Finalizado! 🎉</h3>
+                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje se guardó en la base de datos (se conserva el más alto).</p>
+                        <div class="bg-stone-50 p-6 md:p-8 rounded-[2.5rem] border border-stone-100 shadow-inner inline-block px-10 md:px-16 mb-8 w-full md:w-auto">
+                            <p class="text-xs md:text-sm font-bold text-stone-400 uppercase mb-2 tracking-widest">Puntaje Obtenido</p>
+                            <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
                         </div>
                         <div class="flex flex-col md:flex-row gap-4 justify-center">
-                            <button onclick="switchTab('ranking')" class="flex-1 py-5 md:py-6 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-black active:scale-95 transition">VER RANKING 📊</button>
-                            <button onclick="switchTab('trivia')" class="flex-1 py-5 md:py-6 text-purple-700 font-black bg-purple-100 rounded-2xl hover:bg-purple-200 transition">VOLVER A JUGAR 🔄</button>
+                            <button onclick="switchTab('ranking')" class="flex-1 py-4 md:py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-black active:scale-95 transition">VER RANKING 📊</button>
+                            <button onclick="switchTab('trivia')" class="flex-1 py-4 md:py-5 text-purple-700 font-black bg-purple-100 rounded-2xl hover:bg-purple-200 transition">VOLVER A JUGAR 🔄</button>
                         </div>
                     </div>
                 </div>
@@ -212,19 +220,21 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 4: RANKING                           -->
+        <!-- VISTA 4: RANKING (2 COLUMNAS EN PC)        -->
         <!-- ========================================== -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
-                <div class="max-w-3xl mx-auto w-full">
-                    <div class="text-center mb-8 md:mb-12">
-                        <h2 class="text-4xl md:text-6xl font-brand italic mb-3 text-stone-900 leading-none">Ranking Oficial</h2>
+                <!-- max-w-5xl para dar espacio a las 2 columnas en PC -->
+                <div class="max-w-5xl mx-auto w-full">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl md:text-5xl font-brand italic mb-3 text-stone-900 leading-none">Ranking Oficial</h2>
                         <p class="text-stone-600 text-sm md:text-lg font-medium">Las goleadoras mentales del torneo.</p>
                     </div>
                     
                     <div class="bg-white/90 backdrop-blur-md rounded-[3rem] shadow-2xl border border-white p-4 md:p-8 w-full">
-                        <div id="leaderboard-list" class="space-y-3 md:space-y-4">
-                            <p class="text-center text-stone-400 text-sm md:text-base py-10 font-bold">Cargando posiciones...</p>
+                        <!-- AQUI ESTÁ EL CAMBIO: grid-cols-2 para monitores grandes -->
+                        <div id="leaderboard-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <p class="text-center text-stone-400 text-sm md:text-base py-10 font-bold md:col-span-2">Cargando posiciones...</p>
                         </div>
                     </div>
                 </div>
@@ -236,21 +246,22 @@
         <!-- ========================================== -->
         <section id="view-sorteo" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
-                <div class="bg-white/95 backdrop-blur-xl p-8 md:p-16 rounded-[3rem] shadow-2xl border-4 border-purple-300 text-center w-full max-w-3xl mx-auto">
-                    <span class="text-6xl md:text-8xl mb-6 block animate-bounce">🎁</span>
-                    <h2 class="text-4xl md:text-6xl font-brand italic mb-4 text-stone-800 leading-none">Sorteo Oficial</h2>
-                    <p class="text-stone-500 text-base md:text-lg mb-10 font-medium bg-stone-50 py-3 rounded-xl border border-stone-100">Participan todas las personas rankeadas en la Trivia.</p>
+                <!-- Ajuste de paddings para que no se salga de pantalla -->
+                <div class="bg-white/95 backdrop-blur-xl p-8 md:p-10 rounded-[3rem] shadow-2xl border-4 border-purple-300 text-center w-full max-w-2xl mx-auto">
+                    <span class="text-6xl md:text-7xl mb-4 block animate-bounce">🎁</span>
+                    <h2 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-800 leading-none">Sorteo Oficial</h2>
+                    <p class="text-stone-500 text-sm md:text-base mb-6 font-medium bg-stone-50 py-2 rounded-xl border border-stone-100">Participan todas las personas rankeadas en la Trivia.</p>
 
-                    <!-- CAJA DE LA RULETA -->
-                    <div class="bg-stone-50 p-8 md:p-12 rounded-[2.5rem] mb-10 h-48 md:h-64 flex items-center justify-center shadow-inner relative overflow-hidden border-2 border-stone-200">
+                    <!-- CAJA DE LA RULETA MÁS COMPACTA -->
+                    <div class="bg-stone-50 p-6 md:p-8 rounded-[2.5rem] mb-8 h-40 md:h-48 flex items-center justify-center shadow-inner relative overflow-hidden border-2 border-stone-200">
                         <div class="absolute inset-0 bg-gradient-to-br from-purple-100 to-emerald-100 opacity-50"></div>
-                        <span id="sorteo-name-tab" class="text-3xl md:text-6xl font-black uppercase italic text-stone-800 text-center relative z-10 transition-all duration-200 w-full break-words">¿QUIÉN GANARÁ?</span>
+                        <span id="sorteo-name-tab" class="text-3xl md:text-5xl font-black uppercase italic text-stone-800 text-center relative z-10 transition-all duration-200 w-full break-words">¿QUIÉN GANARÁ?</span>
                     </div>
 
-                    <button onclick="iniciarSorteoTab()" class="w-full py-6 md:py-8 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-xl md:text-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 active:scale-95 transition-all">
+                    <button onclick="iniciarSorteoTab()" class="w-full py-5 md:py-6 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-xl md:text-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 active:scale-95 transition-all">
                         🎲 GIRAR RULETA
                     </button>
-                    <p id="sorteo-tab-error" class="text-rose-500 font-bold text-sm md:text-base mt-6 bg-rose-50 py-2 rounded-lg hide">¡No hay participantes en el ranking aún!</p>
+                    <p id="sorteo-tab-error" class="text-rose-500 font-bold text-sm mt-4 bg-rose-50 py-2 rounded-lg hide">¡No hay participantes en el ranking aún!</p>
                 </div>
             </div>
         </section>
@@ -265,7 +276,7 @@
                 <div>
                     <div class="flex gap-4 items-center mb-8">
                         <img src="logo.png" alt="Logo" class="h-16 w-auto object-contain" onerror="this.style.display='none'">
-                        <button onclick="switchTab('inicio')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200">Salir del Stream</button>
+                        <button onclick="switchTab('inicio')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200 transition">Salir del Stream</button>
                     </div>
                     <p class="text-xs font-bold text-purple-600 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
                     <h1 class="text-6xl font-brand italic mb-2 leading-none tracking-tighter">Festival <span class="text-gradient">Nosotras</span></h1>
@@ -282,24 +293,9 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="mt-8 space-y-3">
-                    <button onclick="iniciarSorteo()" class="w-full py-5 bg-purple-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-purple-500 transition shadow-lg">🎲 Sorteo Automático</button>
-                    <p id="sorteo-error" class="text-rose-500 font-bold text-xs text-center hide">¡Mínimo 3 jugadores necesarios!</p>
-                </div>
             </div>
 
-            <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative bg-stone-50" id="stream-feed">
-                <!-- Sorteo Overlay -->
-                <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
-                    <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
-                    <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-emerald-50 opacity-50"></div>
-                        <span id="sorteo-name" class="text-6xl font-black uppercase italic text-stone-800 text-center relative z-10">¿QUIÉN GANARÁ?</span>
-                    </div>
-                    <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
-                </div>
-
+            <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative bg-stone-50/50" id="stream-feed">
                 <!-- CUADRÍCULA STREAM -->
                 <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8"></div>
             </div>
@@ -310,7 +306,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-10">
                     <h2 class="text-4xl font-black text-rose-900 italic">Moderación 🛠️</h2>
-                    <button onclick="switchTab('inicio')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-rose-950">Cerrar Moderación</button>
+                    <button onclick="switchTab('inicio')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-rose-950 transition">Cerrar Moderación</button>
                 </div>
                 <!-- CUADRÍCULA MODERACIÓN -->
                 <div id="admin-feed-content" class="columns-1 md:columns-2 lg:columns-3 gap-6"></div>
@@ -319,8 +315,8 @@
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-    <nav id="mobile-nav" class="bg-white border-t border-stone-200 nav-shadow z-50 pb-safe w-full relative">
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES VISIBLES) -->
+    <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 pb-safe w-full relative">
         <!-- El contenedor interior limita el ancho en navegadores de PC para que no quede estirado -->
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
@@ -554,7 +550,6 @@
         };
 
         window.finishTrivia = () => {
-            // Guardar que consumió un intento
             let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
             localStorage.setItem('triviaAttempts', attempts + 1);
             window.actualizarIntentosUI();
@@ -565,7 +560,7 @@
             if(window.guardarPuntajeDB) window.guardarPuntajeDB();
         };
 
-        // --- Lógica Sorteo (Nueva Pestaña) ---
+        // --- Lógica Sorteo ---
         window.sorteoTabInterval = null;
         window.iniciarSorteoTab = () => {
             if(!window.allResultsData || window.allResultsData.length === 0) {
@@ -576,7 +571,6 @@
             nameDisplay.classList.add('animate-roulette', 'text-stone-400');
             nameDisplay.classList.remove('text-purple-700', 'scale-125');
 
-            // Elegimos de TODOS los rankeados
             const eligible = window.allResultsData;
             let counter = 0;
             if(window.sorteoTabInterval) clearInterval(window.sorteoTabInterval);
@@ -678,17 +672,13 @@
 
         window.guardarPuntajeDB = async () => {
             if(!currentUser) return;
-
-            // Revisamos si ya tiene un puntaje anterior guardado en la DB
             const puntajeExistente = window.allResultsData.find(r => r.userId === currentUser.uid);
             
-            // Si tiene un puntaje previo y es MAYOR o IGUAL al actual, no sobreescribimos
             if (puntajeExistente && puntajeExistente.score >= window.score) {
                 console.log("Se conservó el puntaje anterior por ser más alto.");
                 return;
             }
 
-            // Si es su primer intento o sacó un puntaje más alto, lo guardamos
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados', currentUser.uid);
             await setDoc(ref, { 
                 name: window.playerName, 
@@ -702,17 +692,17 @@
             const list = document.getElementById('leaderboard-list');
             if(!list) return;
             list.innerHTML = '';
-            if(data.length === 0) { list.innerHTML = '<p class="text-center text-stone-400 text-sm py-8 font-bold">No hay puntajes aún. ¡Sé la primera!</p>'; return; }
+            if(data.length === 0) { list.innerHTML = '<p class="text-center text-stone-400 text-sm py-8 font-bold md:col-span-2">No hay puntajes aún. ¡Sé la primera!</p>'; return; }
             
-            data.slice(0, 15).forEach((item, index) => {
+            data.slice(0, 20).forEach((item, index) => {
                 const div = document.createElement('div');
                 let styles = 'bg-white border-stone-100'; let medal = '';
                 if(index === 0) { styles = 'bg-gradient-to-r from-yellow-300 to-yellow-500 text-yellow-900 border-yellow-400 shadow-md font-black'; medal = '🥇'; } 
                 else if(index === 1) { styles = 'bg-gradient-to-r from-stone-200 to-stone-400 text-stone-800 border-stone-400 shadow-sm font-bold'; medal = '🥈'; } 
                 else if(index === 2) { styles = 'bg-gradient-to-r from-amber-600 to-orange-700 text-white border-amber-800 shadow-sm font-bold'; medal = '🥉'; }
                 
-                div.className = `flex items-center justify-between p-4 md:p-6 rounded-2xl border ${styles} transform transition hover:scale-[1.01]`;
-                div.innerHTML = `<div class="flex items-center gap-4 md:gap-6"><span class="text-2xl md:text-3xl w-8 text-center">${medal || `<span class="opacity-40 text-lg font-black italic">#${index + 1}</span>`}</span><span class="text-sm md:text-lg font-bold uppercase tracking-tight">${item.name}</span></div><span class="text-lg md:text-2xl font-black tabular-nums">${item.score} <small class="text-[8px] md:text-[10px] uppercase opacity-50">PTS</small></span>`;
+                div.className = `flex items-center justify-between p-4 md:p-5 rounded-2xl border ${styles} transform transition hover:scale-[1.02]`;
+                div.innerHTML = `<div class="flex items-center gap-4"><span class="text-2xl md:text-3xl w-8 text-center">${medal || `<span class="opacity-40 text-lg font-black italic">#${index + 1}</span>`}</span><span class="text-sm md:text-base font-bold uppercase tracking-tight">${item.name}</span></div><span class="text-lg md:text-xl font-black tabular-nums">${item.score} <small class="text-[8px] uppercase opacity-50">PTS</small></span>`;
                 list.appendChild(div);
             });
         };
@@ -734,7 +724,8 @@
             const card = document.createElement('div');
             card.className = 'bg-white/90 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-md border border-white flex flex-col card-enter mb-6 break-inside-avoid inline-block w-full hover:shadow-xl transition-shadow';
             
-            const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-auto object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
+            // SE LIMITÓ LA ALTURA DE LA IMAGEN A max-h-48 (12rem) PARA QUE NO EMPUJE EL TEXTO HACIA ABAJO
+            const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-48 md:h-64 object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
             const likes = p.likes || 0;
             const respuestas = window.allRespuestas ? window.allRespuestas.filter(r => r.parentId === p.id) : [];
 
@@ -829,7 +820,7 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height, max = 600; // Un poco más de calidad para compus
+                    let w = img.width, h = img.height, max = 600; 
                     if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
