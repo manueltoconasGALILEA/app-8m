@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Copa Challenger | Festival Nosotras</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
@@ -181,12 +184,15 @@
                     <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-10">
                         <h3 class="text-4xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
-                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos.</p>
+                        <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos (se conserva tu mejor puntaje).</p>
                         <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm inline-block px-12 mb-10">
-                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Total</p>
+                            <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Obtenido</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
                         </div>
-                        <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
+                            <button onclick="switchTab('trivia')" class="w-full py-4 text-purple-700 font-bold bg-purple-50 rounded-2xl hover:bg-purple-100 transition">VOLVER A JUGAR</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,7 +232,7 @@
                     <!-- CAJA DE LA RULETA -->
                     <div class="bg-stone-50 p-8 rounded-[2rem] mb-8 h-48 flex items-center justify-center shadow-inner relative overflow-hidden border border-stone-200">
                         <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-emerald-50 opacity-50"></div>
-                        <span id="sorteo-name-tab" class="text-3xl md:text-5xl font-black uppercase italic text-stone-300 text-center relative z-10 transition-all duration-200">¿QUIÉN GANARÁ?</span>
+                        <span id="sorteo-name-tab" class="text-3xl md:text-5xl font-black uppercase italic text-stone-800 text-center relative z-10 transition-all duration-200">¿QUIÉN GANARÁ?</span>
                     </div>
 
                     <button onclick="iniciarSorteoTab()" class="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition">
@@ -349,8 +355,9 @@
         window.checkPin = () => {
             const input = document.getElementById('pin-input');
             if (input.value === window.ADMIN_PIN) {
+                const targetView = window.pendingView;
                 window.closePinModal();
-                window.switchTab(window.pendingView);
+                window.switchTab(targetView);
             } else {
                 input.value = "";
                 input.style.border = "2px solid red";
@@ -554,12 +561,13 @@
                 err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
             }
             const nameDisplay = document.getElementById('sorteo-name-tab');
-            nameDisplay.classList.add('animate-roulette', 'text-stone-300');
+            nameDisplay.classList.add('animate-roulette', 'text-stone-400');
             nameDisplay.classList.remove('text-purple-700', 'scale-125');
 
             // Elegimos de TODOS los rankeados
             const eligible = window.allResultsData;
             let counter = 0;
+            if(window.sorteoTabInterval) clearInterval(window.sorteoTabInterval);
             window.sorteoTabInterval = setInterval(() => {
                 const randomPlayer = eligible[Math.floor(Math.random() * eligible.length)];
                 nameDisplay.textContent = randomPlayer.name;
@@ -568,7 +576,7 @@
                     clearInterval(window.sorteoTabInterval);
                     const winner = eligible[Math.floor(Math.random() * eligible.length)];
                     nameDisplay.textContent = "🎉 " + winner.name + " 🎉";
-                    nameDisplay.classList.remove('animate-roulette', 'text-stone-300');
+                    nameDisplay.classList.remove('animate-roulette', 'text-stone-400');
                     nameDisplay.classList.add('text-purple-700', 'scale-125', 'transition-transform', 'duration-500');
                 }
             }, 100);
