@@ -32,6 +32,17 @@
 </head>
 <body class="h-screen w-full flex flex-col overflow-hidden selection:bg-purple-200">
 
+    <!-- AVISO DE EMERGENCIA SI SE ABRE DESDE WHATSAPP / LOCAL -->
+    <div id="local-warning" class="fixed top-0 left-0 w-full bg-rose-600 text-white p-6 text-center z-[200] shadow-2xl hide">
+        <p class="font-black text-xl mb-2">⚠️ ¡Aviso Importante!</p>
+        <p class="font-medium text-sm leading-tight">Estás abriendo este archivo directamente desde tus descargas o chat. Por seguridad, los botones están bloqueados.<br><br><b>Abre tu enlace oficial en el navegador web (ej: Chrome/Safari).</b></p>
+    </div>
+    <script>
+        window.onload = function() {
+            setTimeout(function() { if (typeof window.safeSwitchView === 'undefined') document.getElementById('local-warning').classList.remove('hide'); }, 1000);
+        };
+    </script>
+
     <!-- SELECTOR DE VISTA (ADMIN / STREAM) - Flotante arriba a la derecha -->
     <div id="mode-selector" class="fixed top-4 right-4 z-[100] flex gap-2 opacity-30 hover:opacity-100 transition-opacity">
         <button onclick="safeSwitchView('stream')" title="Stream" class="p-2 bg-emerald-700 text-white rounded-xl shadow-lg border border-emerald-500 text-xs font-bold">🖥️ STREAM</button>
@@ -61,7 +72,7 @@
     </div>
 
     <!-- HEADER MÓVIL COMÚN -->
-    <header id="mobile-header" class="flex justify-between items-center p-5 bg-[#f8f7f4] z-10">
+    <header id="mobile-header" class="flex justify-between items-center p-5 bg-[#f8f7f4] z-10 max-w-7xl mx-auto w-full">
         <div>
             <p class="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
             <h1 class="text-2xl font-brand italic leading-none">Festival <span class="text-gradient">Nosotras</span></h1>
@@ -70,24 +81,25 @@
     </header>
 
     <!-- ÁREA PRINCIPAL (SCROLLABLE) -->
-    <main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative" id="main-content">
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative w-full" id="main-content">
         
         <!-- ========================================== -->
         <!-- VISTA 1: INICIO (EL MURO)                  -->
         <!-- ========================================== -->
-        <section id="view-inicio" class="animate-view px-5 pb-5">
-            <div class="flex items-center justify-between mb-4">
+        <section id="view-inicio" class="animate-view px-5 pb-5 max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-3xl font-brand italic text-stone-900 leading-none">Inicio</h2>
                     <p class="text-xs text-stone-500 mt-1">Mensajes de apoyo en vivo.</p>
                 </div>
-                <button onclick="switchTab('mensaje')" class="bg-purple-700 text-white px-4 py-2 rounded-full text-xs font-bold shadow-md hover:bg-purple-800 transition">
+                <button onclick="switchTab('mensaje')" class="bg-purple-700 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-md hover:bg-purple-800 transition">
                     + Enviar Mensaje
                 </button>
             </div>
             
-            <div id="participant-feed-content" class="space-y-4">
-                <div class="text-center p-10">
+            <!-- DISEÑO DE CUADRÍCULA (MASONRY GRID) PARA NOTEBOOKS -->
+            <div id="participant-feed-content" class="columns-1 md:columns-2 lg:columns-3 gap-6">
+                <div class="text-center p-10 break-inside-avoid">
                     <span class="text-4xl block animate-spin">⚽</span>
                     <p class="text-stone-500 font-bold mt-4">Cargando la cancha...</p>
                 </div>
@@ -98,27 +110,28 @@
         <!-- VISTA 2: FORMULARIO (MENSAJE)              -->
         <!-- ========================================== -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-stone-100 mb-8">
-                <h2 class="text-3xl font-brand italic mb-1 text-stone-900 leading-none">Dejá tu mensaje</h2>
-                <p class="text-xs text-stone-500 mb-6">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
+            <!-- max-w-xl centra y achica el formulario en compus -->
+            <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-stone-100 mb-8 max-w-xl mx-auto">
+                <h2 class="text-3xl font-brand italic mb-2 text-stone-900 leading-none">Dejá tu mensaje</h2>
+                <p class="text-sm text-stone-500 mb-8">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
                 
-                <form id="pase-form" class="space-y-4">
-                    <div class="relative group aspect-video bg-stone-50 rounded-[1.5rem] overflow-hidden border-2 border-dashed border-stone-200" id="foto-trigger">
+                <form id="pase-form" class="space-y-5">
+                    <div class="relative group aspect-video bg-stone-50 rounded-[1.5rem] overflow-hidden border-2 border-dashed border-stone-200 hover:border-purple-300 transition-colors" id="foto-trigger">
                         <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                        <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
-                            <span class="text-4xl mb-1">📸</span>
-                            <p class="font-bold text-xs uppercase tracking-tighter">Tomar Foto</p>
+                        <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-purple-500 transition-colors">
+                            <span class="text-5xl mb-2">📸</span>
+                            <p class="font-bold text-xs uppercase tracking-widest">Tomar Foto</p>
                         </div>
                         <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-500">
-                        <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-5 py-4 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-5 py-4 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
-                    <textarea id="texto-mensaje" rows="2" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                    <textarea id="texto-mensaje" rows="3" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-5 py-4 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
                     
-                    <button type="submit" id="submit-btn" class="w-full py-4 bg-stone-900 text-white rounded-xl font-black text-sm shadow-lg active:scale-95 transition">
+                    <button type="submit" id="submit-btn" class="w-full py-5 bg-stone-900 text-white rounded-xl font-black text-sm shadow-lg hover:bg-black active:scale-95 transition">
                         ENVIAR MENSAJE 💜
                     </button>
                 </form>
@@ -129,43 +142,46 @@
         <!-- VISTA 3: TRIVIA (JUEGO)                    -->
         <!-- ========================================== -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
-            <div class="bg-gradient-brand p-8 rounded-[2.5rem] shadow-xl text-white text-center mb-6">
-                <span class="text-5xl block mb-2">🏆</span>
-                <h2 class="text-3xl font-brand italic mb-2">Trivia Challenger</h2>
-                <p class="text-purple-100 text-sm">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
-            </div>
+            <!-- max-w-2xl centra la trivia en pantallas grandes -->
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-gradient-brand p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white text-center mb-6">
+                    <span class="text-6xl block mb-4">🏆</span>
+                    <h2 class="text-4xl font-brand italic mb-2">Trivia Challenger</h2>
+                    <p class="text-purple-100 text-sm md:text-base">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
+                </div>
 
-            <!-- Pantalla Inicio Trivia -->
-            <div id="trivia-start" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 text-center">
-                <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 rounded-xl bg-stone-50 mb-4 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900">
-                <p id="name-error" class="text-rose-500 font-bold text-xs hide mb-4">¡Ingresá tu nombre para jugar!</p>
-                <button onclick="startTrivia()" class="w-full py-4 bg-purple-700 text-white rounded-xl font-black shadow-lg active:scale-95 transition">¡EMPEZAR A JUGAR!</button>
-            </div>
+                <!-- Pantalla Inicio Trivia -->
+                <div id="trivia-start" class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-stone-100 text-center">
+                    <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-5 rounded-2xl bg-stone-50 mb-4 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg">
+                    <p id="name-error" class="text-rose-500 font-bold text-sm hide mb-4">¡Ingresá tu nombre para jugar!</p>
+                    <button onclick="startTrivia()" class="w-full py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR!</button>
+                </div>
 
-            <!-- Pantalla Preguntas -->
-            <div id="trivia-quiz" class="hide">
-                <div class="flex justify-between items-center mb-4 px-2">
-                    <span id="quiz-progress" class="text-xs font-black text-purple-700 uppercase">Pregunta 1/10</span>
-                    <span id="quiz-score" class="text-xs font-black text-emerald-600 uppercase">Puntos: 0</span>
+                <!-- Pantalla Preguntas -->
+                <div id="trivia-quiz" class="hide">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase">Pregunta 1/10</span>
+                        <span id="quiz-score" class="text-xs md:text-sm font-black text-emerald-600 uppercase">Puntos: 0</span>
+                    </div>
+                    <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-stone-100 mb-6 min-h-[200px] flex items-center justify-center text-center">
+                        <p id="question-text" class="font-bold text-xl md:text-2xl leading-tight text-stone-800">¿Pregunta aquí?</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="checkAnswer(true)" class="py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-sm active:scale-95 transition">VERDADERO</button>
+                        <button onclick="checkAnswer(false)" class="py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-lg shadow-sm active:scale-95 transition">FALSO</button>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 mb-4 min-h-[160px] flex items-center justify-center text-center">
-                    <p id="question-text" class="font-bold text-lg leading-tight text-stone-800">¿Pregunta aquí?</p>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="checkAnswer(true)" class="py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black shadow-sm active:scale-95 transition">VERDADERO</button>
-                    <button onclick="checkAnswer(false)" class="py-5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black shadow-sm active:scale-95 transition">FALSO</button>
-                </div>
-            </div>
 
-            <!-- Pantalla Final -->
-            <div id="trivia-end" class="hide text-center py-8">
-                <h3 class="text-3xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
-                <p class="text-stone-500 text-sm mb-6">Tu puntaje se guardó en la base de datos.</p>
-                <div class="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm inline-block px-10 mb-8">
-                    <p class="text-xs font-bold text-stone-400 uppercase mb-1">Puntaje Total</p>
-                    <p id="final-score" class="text-5xl font-black text-purple-700 leading-none">0</p>
+                <!-- Pantalla Final -->
+                <div id="trivia-end" class="hide text-center py-10">
+                    <h3 class="text-4xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
+                    <p class="text-stone-500 text-base mb-8">Tu puntaje se guardó en la base de datos.</p>
+                    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm inline-block px-12 mb-10">
+                        <p class="text-sm font-bold text-stone-400 uppercase mb-2">Puntaje Total</p>
+                        <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
+                    </div>
+                    <button onclick="switchTab('ranking')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-lg hover:bg-black active:scale-95 transition">VER RANKING</button>
                 </div>
-                <button onclick="switchTab('ranking')" class="w-full py-4 bg-stone-900 text-white rounded-xl font-black shadow-lg active:scale-95 transition">VER RANKING</button>
             </div>
         </section>
 
@@ -173,12 +189,15 @@
         <!-- VISTA 4: RANKING                           -->
         <!-- ========================================== -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
-            <h2 class="text-3xl font-brand italic mb-1 text-stone-900 leading-none">Ranking Oficial</h2>
-            <p class="text-stone-500 text-sm mb-6">Las goleadoras mentales del torneo.</p>
-            
-            <div class="bg-white rounded-[2rem] shadow-sm border border-stone-100 p-2">
-                <div id="leaderboard-list" class="space-y-2">
-                    <p class="text-center text-stone-400 text-sm py-8">Cargando posiciones...</p>
+            <!-- max-w-4xl centra la lista -->
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-brand italic mb-1 text-stone-900 leading-none">Ranking Oficial</h2>
+                <p class="text-stone-500 text-sm mb-6">Las goleadoras mentales del torneo.</p>
+                
+                <div class="bg-white rounded-[2rem] shadow-sm border border-stone-100 p-2 md:p-4">
+                    <div id="leaderboard-list" class="space-y-3">
+                        <p class="text-center text-stone-400 text-sm py-8">Cargando posiciones...</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -216,7 +235,7 @@
             </div>
 
             <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative" id="stream-feed">
-                <!-- Sorteo Overlay (Oculto por defecto) -->
+                <!-- Sorteo Overlay -->
                 <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
                     <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
                     <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl">
@@ -225,25 +244,27 @@
                     <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
                 </div>
 
-                <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8 space-y-8"></div>
+                <!-- CUADRÍCULA STREAM -->
+                <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8"></div>
             </div>
         </section>
 
         <!-- MODERACIÓN -->
         <section id="view-admin" class="fixed inset-0 bg-rose-50 z-[150] hide p-10 overflow-y-auto">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-10">
                     <h2 class="text-4xl font-black text-rose-900 italic">Moderación 🛠️</h2>
                     <button onclick="switchTab('inicio')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg">Cerrar Moderación</button>
                 </div>
-                <div id="admin-feed-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
+                <!-- CUADRÍCULA MODERACIÓN -->
+                <div id="admin-feed-content" class="columns-1 md:columns-2 lg:columns-3 gap-6"></div>
             </div>
         </section>
 
     </main>
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR (4 BOTONES VISIBLES) -->
-    <nav id="mobile-nav" class="bg-white border-t border-stone-200 nav-shadow px-2 py-3 flex justify-between items-center z-50 pb-safe">
+    <nav id="mobile-nav" class="bg-white border-t border-stone-200 nav-shadow px-2 py-3 flex justify-between items-center z-50 pb-safe lg:px-20">
         
         <!-- 1. Inicio -->
         <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-purple-700 bg-purple-50 transition-all">
@@ -312,7 +333,6 @@
                 document.getElementById('mobile-header').classList.remove('hide');
                 document.getElementById('mobile-nav').classList.remove('hide');
                 
-                // Efecto visual en la barra inferior
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     btn.classList.remove('text-purple-700', 'bg-purple-50'); 
                     btn.classList.add('text-stone-400');
@@ -334,7 +354,6 @@
         window.selectedQuestions = []; window.questionStartTime = 0;
         
         const allQuestions = [
-            // FÚTBOL FEMENINO - HISTORIA Y REGLAS
             { text: "¿El fútbol femenino estuvo prohibido en países como Inglaterra y Brasil por casi 50 años?", ans: true },
             { text: "¿Marta Vieira da Silva tiene más goles en Mundiales que Pelé o Messi?", ans: true },
             { text: "¿En el fútbol femenino, la cancha y los arcos son más chicos que en el masculino?", ans: false }, 
@@ -364,7 +383,6 @@
             { text: "¿El 'Tercer Tiempo' es obligatorio por reglamento de la FIFA en el fútbol femenino?", ans: false }, 
             { text: "¿Las mujeres se lesionan los ligamentos cruzados (LCA) con más frecuencia que los hombres por su anatomía?", ans: true },
             
-            // SALUD MENTAL EN EL DEPORTE
             { text: "¿Sentir nervios antes de un partido significa que no estás preparada mentalmente?", ans: false }, 
             { text: "¿La 'visualización' es imaginar jugadas con éxito y realmente mejora el rendimiento?", ans: true },
             { text: "¿Llorar después de perder una final demuestra que la jugadora es psicológicamente débil?", ans: false }, 
@@ -396,7 +414,6 @@
             { text: "¿Enfocarte solo en el resultado (ganar o perder) genera más ansiedad que enfocarte en tu propio rendimiento?", ans: true },
             { text: "¿La terapia psicológica está prohibida por la FIFA por considerarse ventaja deportiva desleal?", ans: false }, 
             
-            // PREGUNTAS MIXTAS / TRAMPA / FESTIVAL NOSOTRAS
             { text: "¿Simone Biles y Naomi Osaka son atletas mundiales que pausaron su carrera para cuidar su salud mental?", ans: true },
             { text: "¿El Festival Nosotras promueve la competencia tóxica entre las mujeres de la Cuenca?", ans: false }, 
             { text: "¿Escuchar música en el vestuario antes de jugar aísla a la jugadora y arruina la química del equipo?", ans: false }, 
@@ -486,22 +503,17 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Obtenemos de forma segura la configuración inyectada por el entorno
         const firebaseConfigText = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-        let firebaseConfig;
-        
+        let firebaseConfig = {
+            apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
+            authDomain: "copa-8m-stream.firebaseapp.com",
+            projectId: "copa-8m-stream",
+            storageBucket: "copa-8m-stream.firebasestorage.app",
+            messagingSenderId: "650833891517",
+            appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
+        };
         if (firebaseConfigText) {
             firebaseConfig = typeof firebaseConfigText === 'string' ? JSON.parse(firebaseConfigText) : firebaseConfigText;
-        } else {
-            // Configuración de respaldo (Tus credenciales reales)
-            firebaseConfig = {
-                apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
-                authDomain: "copa-8m-stream.firebaseapp.com",
-                projectId: "copa-8m-stream",
-                storageBucket: "copa-8m-stream.firebasestorage.app",
-                messagingSenderId: "650833891517",
-                appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
-            };
         }
         
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
@@ -518,41 +530,31 @@
 
         const startDB = async () => {
             try {
-                // 1. REGLA ESTRICTA: SIEMPRE autenticar PRIMERO y esperar el resultado
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
                 
-                // 2. MANTENER ESTADO Y LEER DATOS SOLO SI HAY USUARIO CONFIRMADO
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user;
                     if (user) {
                         iniciarLecturasDb();
                     }
                 });
-            } catch (err) { 
-                console.error("Error Firebase Auth:", err); 
-            }
+            } catch (err) { console.error("Error Firebase Auth:", err); }
         };
 
         function iniciarLecturasDb() {
-            // LECTURAS BÁSICAS (Sin queries complejos para evitar errores de índices)
             const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
             onSnapshot(pasesRef, (snap) => {
                 window.allPases = [];
                 snap.forEach(doc => window.allPases.push({id: doc.id, ...doc.data()}));
-                
-                // Filtramos y ordenamos en la memoria local (JavaScript)
                 window.allPases.sort((a,b) => b.timestamp - a.timestamp);
-                
                 const elCounter = document.getElementById('stream-counter');
                 if (elCounter) elCounter.textContent = window.allPases.length;
                 if(window.renderFeed) window.renderFeed();
-            }, (err) => { 
-                console.error("Error cargando pases:", err); 
-            });
+            }, (err) => { console.error("Error cargando pases:", err); });
 
             const respuestasRef = collection(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo');
             onSnapshot(respuestasRef, (snap) => {
@@ -560,9 +562,7 @@
                 snap.forEach(doc => window.allRespuestas.push({id: doc.id, ...doc.data()}));
                 window.allRespuestas.sort((a,b) => a.timestamp - b.timestamp);
                 if(window.renderFeed) window.renderFeed();
-            }, (err) => { 
-                console.error("Error cargando respuestas:", err); 
-            });
+            }, (err) => { console.error("Error cargando respuestas:", err); });
 
             const triviaRef = collection(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados');
             onSnapshot(triviaRef, (snap) => {
@@ -573,12 +573,9 @@
                 const elTrivia = document.getElementById('stream-trivia-counter');
                 if (elTrivia) elTrivia.textContent = results.length;
                 if(window.renderLeaderboard) window.renderLeaderboard(results);
-            }, (err) => { 
-                console.error("Error cargando trivia:", err); 
-            });
+            }, (err) => { console.error("Error cargando trivia:", err); });
         }
 
-        // Iniciamos el motor
         startDB();
 
         window.guardarPuntajeDB = async () => {
@@ -605,8 +602,8 @@
                 else if(index === 1) { styles = 'bg-gradient-to-r from-stone-200 to-stone-400 text-stone-800 border-stone-400 shadow-sm font-bold'; medal = '🥈'; } 
                 else if(index === 2) { styles = 'bg-gradient-to-r from-amber-600 to-orange-700 text-white border-amber-800 shadow-sm font-bold'; medal = '🥉'; }
                 
-                div.className = `flex items-center justify-between p-4 rounded-2xl border ${styles}`;
-                div.innerHTML = `<div class="flex items-center gap-4"><span class="text-2xl w-8 text-center">${medal || `<span class="opacity-40 text-lg font-black italic">#${index + 1}</span>`}</span><span class="text-sm font-bold uppercase tracking-tight">${item.name}</span></div><span class="text-lg font-black tabular-nums">${item.score} <small class="text-[8px] uppercase opacity-50">PTS</small></span>`;
+                div.className = `flex items-center justify-between p-4 md:p-6 rounded-2xl border ${styles}`;
+                div.innerHTML = `<div class="flex items-center gap-4 md:gap-6"><span class="text-2xl md:text-3xl w-8 text-center">${medal || `<span class="opacity-40 text-lg font-black italic">#${index + 1}</span>`}</span><span class="text-sm md:text-lg font-bold uppercase tracking-tight">${item.name}</span></div><span class="text-lg md:text-2xl font-black tabular-nums">${item.score} <small class="text-[8px] md:text-[10px] uppercase opacity-50">PTS</small></span>`;
                 list.appendChild(div);
             });
         };
@@ -626,9 +623,9 @@
 
         function crearCard(p, modo) {
             const card = document.createElement('div');
-            card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 flex flex-col card-enter';
-            if(modo === 'stream') card.classList.add('break-inside-avoid');
-
+            // AGREGADO "mb-6 break-inside-avoid" PARA QUE FUNCIONE PERFECTO EN LA CUADRÍCULA DE NOTEBOOKS
+            card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 flex flex-col card-enter mb-6 break-inside-avoid inline-block w-full';
+            
             const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-auto object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
             const likes = p.likes || 0;
             const respuestas = window.allRespuestas ? window.allRespuestas.filter(r => r.parentId === p.id) : [];
@@ -644,7 +641,7 @@
                     ${p.mensaje ? `<p class="text-stone-600 text-sm italic font-medium leading-relaxed mb-4">"${p.mensaje}"</p>` : ''}
                     
                     <div class="flex items-center justify-between mt-2">
-                        <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full text-rose-600 border border-rose-100 active:scale-95 transition">
+                        <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full text-rose-600 border border-rose-100 hover:scale-105 active:scale-95 transition">
                             <span class="text-sm">❤️</span><span class="text-xs font-black tabular-nums">${likes}</span>
                         </button>
                         ${modo === 'admin' ? `<button onclick="eliminarPase('${p.id}')" class="text-[10px] font-bold text-white bg-rose-500 px-3 py-1.5 rounded-lg">Borrar</button>` : ''}
