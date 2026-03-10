@@ -2,206 +2,508 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Festival Nosotras | El Pase Invisible V5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Copa Challenger | Festival Nosotras</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8f7f4;
+            color: #1c1917;
+            -webkit-tap-highlight-color: transparent;
+        }
         .font-brand { font-family: 'Playfair Display', serif; }
-        .text-brand { background: linear-gradient(135deg, #6b21a8 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .bg-gradient-brand { background: linear-gradient(135deg, #7e22ce 0%, #059669 100%); }
+        .text-gradient { background: linear-gradient(135deg, #7e22ce 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
         .hide { display: none !important; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-view { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes roulette { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+        .animate-roulette { animation: roulette 0.1s infinite; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .card-enter { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .animate-ticker { animation: ticker 40s linear infinite; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        @keyframes flash { 0%, 100% { color: inherit; } 50% { color: #10b981; transform: scale(1.1); } }
-        .flash-active { animation: flash 0.5s ease-in-out; }
+        .nav-shadow { box-shadow: 0 -10px 40px rgba(0,0,0,0.08); }
     </style>
 </head>
-<body class="bg-[#fdfcf9] text-stone-900 min-h-screen">
+<body class="h-screen w-full flex flex-col overflow-hidden selection:bg-purple-200">
 
-    <!-- SELECTOR DE VISTA (ADMIN / PRODUCCIÓN) -->
-    <div id="mode-selector" class="fixed bottom-6 left-6 z-50 flex gap-2">
-        <button onclick="safeSwitchView('home')" title="Inicio" class="p-3 bg-stone-900 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-stone-700">🏠</button>
-        <button onclick="safeSwitchView('participant')" title="Móvil" class="p-3 bg-purple-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-purple-500">📱</button>
-        <button onclick="safeSwitchView('stream')" title="Stream" class="p-3 bg-emerald-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-emerald-500">🖥️</button>
-        <button onclick="safeSwitchView('admin')" title="Moderación" class="p-3 bg-rose-700 text-white rounded-2xl shadow-xl hover:scale-110 transition border border-rose-500">🛠️</button>
+    <!-- SELECTOR DE VISTA (ADMIN / STREAM) - Flotante arriba a la derecha -->
+    <div id="mode-selector" class="fixed top-4 right-4 z-[100] flex gap-2 opacity-30 hover:opacity-100 transition-opacity">
+        <button onclick="safeSwitchView('stream')" title="Stream" class="p-2 bg-emerald-700 text-white rounded-xl shadow-lg border border-emerald-500 text-xs font-bold">🖥️ STREAM</button>
+        <button onclick="safeSwitchView('admin')" title="Moderación" class="p-2 bg-rose-700 text-white rounded-xl shadow-lg border border-rose-500 text-xs font-bold">🛠️ MOD</button>
     </div>
 
-    <!-- MODAL DE PIN (SEGURIDAD) -->
-    <div id="pin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center hide">
-        <div class="bg-white p-10 rounded-[3rem] max-w-xs w-full text-center shadow-2xl">
-            <h3 class="text-2xl font-black mb-2">Acceso Privado</h3>
-            <p class="text-stone-400 text-xs mb-6 uppercase font-bold tracking-widest">Taller de Stream</p>
-            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-4xl text-center py-4 bg-stone-100 rounded-2xl mb-4 outline-none border-2 border-transparent focus:border-purple-500 transition-all font-black tracking-widest">
+    <!-- MODALES DE SEGURIDAD Y CONFIRMACIÓN -->
+    <div id="pin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center hide">
+        <div class="bg-white p-8 rounded-[2rem] max-w-xs w-full text-center shadow-2xl">
+            <h3 class="text-xl font-black mb-2">Acceso Privado</h3>
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-3xl text-center py-3 bg-stone-100 rounded-xl mb-4 outline-none focus:border-purple-500 font-black tracking-widest">
             <div class="flex gap-2">
-                <button onclick="closePinModal()" class="flex-1 py-3 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
-                <button onclick="checkPin()" class="flex-1 py-3 bg-stone-900 text-white rounded-xl font-bold hover:bg-black transition">Entrar</button>
+                <button onclick="closePinModal()" class="flex-1 py-2 font-bold text-stone-400">Cancelar</button>
+                <button onclick="checkPin()" class="flex-1 py-2 bg-stone-900 text-white rounded-xl font-bold">Entrar</button>
             </div>
         </div>
     </div>
-
-    <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center hide">
+    <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center hide">
         <div class="bg-white p-8 rounded-[2rem] max-w-xs w-full text-center shadow-2xl">
             <span class="text-4xl block mb-2">🗑️</span>
             <h3 class="text-xl font-black mb-2 text-stone-900">¿Borrar mensaje?</h3>
-            <p class="text-stone-500 text-sm mb-6">Esta acción no se puede deshacer. Desaparecerá del stream.</p>
-            <div class="flex gap-2">
-                <button onclick="closeConfirmModal()" class="flex-1 py-3 font-bold text-stone-400 hover:text-stone-600 transition">Cancelar</button>
-                <button id="btn-confirm-delete" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold shadow-lg hover:bg-rose-700 transition">Borrar</button>
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeConfirmModal()" class="flex-1 py-2 font-bold text-stone-400">Cancelar</button>
+                <button id="btn-confirm-delete" class="flex-1 py-2 bg-rose-600 text-white rounded-xl font-bold">Borrar</button>
             </div>
         </div>
     </div>
-    <!-- VISTA 1: HOME -->
-    <section id="view-home" class="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fade">
-        <div class="max-w-4xl">
-            <p class="text-purple-700 font-bold uppercase tracking-[0.4em] text-[10px] mb-4 italic font-brand">Río Turbio | Festival Nosotras</p>
-            <h1 class="text-7xl md:text-9xl font-brand italic mb-4 leading-none tracking-tighter">Copa <span class="text-brand">Challenger</span></h1>
-            <h2 class="text-xl md:text-2xl font-semibold text-stone-500 mb-12 italic tracking-tight">Fútbol Femenino & Bienestar Emocional</h2>
-            
-            <div class="bg-emerald-50 border border-emerald-100 p-10 rounded-[4rem] mb-12 shadow-sm min-h-[140px] flex items-center justify-center">
-                <p id="frase-text" class="text-xl md:text-2xl text-emerald-900 leading-relaxed italic font-medium transition-opacity duration-500">
-                    "El fútbol nos une, el apoyo nos fortalece. Tu mensaje es un pase al corazón."
-                </p>
-            </div>
 
-            <div class="flex flex-col md:flex-row gap-6 justify-center">
-                <button onclick="safeSwitchView('participant')" class="px-12 py-6 bg-purple-700 text-white rounded-full font-black text-xl shadow-lg hover:bg-purple-800 transition transform hover:-translate-y-1">
-                    DÁ UN PASE 📱
+    <!-- HEADER MÓVIL COMÚN -->
+    <header id="mobile-header" class="flex justify-between items-center p-5 bg-[#f8f7f4] z-10">
+        <div>
+            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
+            <h1 class="text-2xl font-brand italic leading-none">Festival <span class="text-gradient">Nosotras</span></h1>
+        </div>
+        <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+    </header>
+
+    <!-- ÁREA PRINCIPAL (SCROLLABLE) -->
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative" id="main-content">
+        
+        <!-- ========================================== -->
+        <!-- VISTA 1: INICIO (EL MURO)                  -->
+        <!-- ========================================== -->
+        <section id="view-inicio" class="animate-view px-5 pb-5">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-3xl font-brand italic text-stone-900 leading-none">Inicio</h2>
+                    <p class="text-xs text-stone-500 mt-1">Mensajes de apoyo en vivo.</p>
+                </div>
+                <button onclick="switchTab('mensaje')" class="bg-purple-700 text-white px-4 py-2 rounded-full text-xs font-bold shadow-md hover:bg-purple-800 transition">
+                    + Enviar Mensaje
                 </button>
             </div>
             
-            <div class="mt-20 flex flex-col items-center gap-4">
-                <img src="logo.png" alt="Logo Centro de Día El Árbol" class="h-20 w-auto object-contain" onerror="this.style.display='none'">
-                <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center">Iniciativa impulsada por el Taller de Stream del<br>Centro de Día El Árbol para el Festival Nosotras</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- VISTA 2: PARTICIPANTE (Móvil) -->
-    <section id="view-participant" class="min-h-screen hide p-4 md:p-8 bg-[#fdfcf9] flex flex-col items-center">
-        <div class="max-w-md w-full">
-            <header class="flex items-center justify-between mb-8">
-                <button onclick="safeSwitchView('home')" class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-stone-100 text-stone-400 hover:text-purple-600 transition">←</button>
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <p class="text-[10px] font-black text-purple-700 uppercase italic">El Pase Invisible</p>
-                        <p class="text-[10px] font-bold text-emerald-600 uppercase">En Vivo</p>
-                    </div>
-                    <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+            <div id="participant-feed-content" class="space-y-4">
+                <div class="text-center p-10">
+                    <span class="text-4xl block animate-spin">⚽</span>
+                    <p class="text-stone-500 font-bold mt-4">Cargando la cancha...</p>
                 </div>
-            </header>
+            </div>
+        </section>
 
-            <div class="bg-white p-8 rounded-[3rem] shadow-xl border border-stone-100 mb-10">
-                <h3 class="text-3xl font-brand italic mb-2 tracking-tighter">Nueva Asistencia</h3>
-                <p class="text-xs text-stone-400 mb-8 italic">Sacate una selfie y agradecé a tu red de apoyo.</p>
+        <!-- ========================================== -->
+        <!-- VISTA 2: FORMULARIO (MENSAJE)              -->
+        <!-- ========================================== -->
+        <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-stone-100 mb-8">
+                <h2 class="text-3xl font-brand italic mb-1 text-stone-900 leading-none">Dejá tu mensaje</h2>
+                <p class="text-xs text-stone-500 mb-6">Sacate una selfie y dejale un mensaje de aliento a esa persona que te banca.</p>
                 
-                <form id="pase-form" class="space-y-6">
-                    <div class="relative group aspect-square bg-stone-50 rounded-[2.5rem] overflow-hidden border-2 border-dashed border-stone-200 cursor-pointer hover:border-purple-400 transition-colors" id="foto-trigger">
+                <form id="pase-form" class="space-y-4">
+                    <div class="relative group aspect-video bg-stone-50 rounded-[1.5rem] overflow-hidden border-2 border-dashed border-stone-200" id="foto-trigger">
                         <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                        <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-300">
-                            <span class="text-6xl mb-2">📸</span>
-                            <p class="font-bold text-sm uppercase tracking-tighter">Tomar Foto</p>
+                        <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
+                            <span class="text-4xl mb-1">📸</span>
+                            <p class="font-bold text-xs uppercase tracking-tighter">Tomar Foto</p>
                         </div>
                         <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
                     </div>
 
-                    <div class="space-y-4">
-                        <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-stone-700 shadow-inner">
-                        <input type="text" id="receiver" placeholder="¿A quién agradecés?" required class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-stone-700 shadow-inner">
-                        <textarea id="mensaje" rows="2" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-6 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium resize-none text-stone-700 shadow-inner"></textarea>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
-
-                    <button type="submit" id="submit-btn" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">
-                        SUBIR AL MURO 🎙️
+                    <textarea id="texto-mensaje" rows="2" placeholder="Tu mensaje de aliento..." class="w-full bg-stone-50 px-4 py-3 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                    
+                    <button type="submit" id="submit-btn" class="w-full py-4 bg-stone-900 text-white rounded-xl font-black text-sm shadow-lg active:scale-95 transition">
+                        ENVIAR MENSAJE 💜
                     </button>
                 </form>
             </div>
-            
-            <div id="participant-feed-content" class="space-y-8 pb-32"></div>
-        </div>
-    </section>
+        </section>
 
-    <!-- VISTA 3: STREAM (Pantalla Gigante) -->
-    <section id="view-stream" class="h-screen hide flex flex-col lg:flex-row overflow-hidden bg-[#faf9f6] relative">
-        <div class="lg:w-1/3 p-10 lg:p-16 flex flex-col justify-between bg-white border-r border-stone-100 relative overflow-hidden shrink-0">
-            <div class="relative z-10">
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="logo.png" alt="Logo El Árbol" class="h-16 w-auto object-contain" onerror="this.style.display='none'">
-                    <div>
-                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] leading-none">Producción En Vivo</p>
-                        <p class="font-bold text-emerald-700 text-sm italic">Taller de Stream - El Árbol</p>
+        <!-- ========================================== -->
+        <!-- VISTA 3: TRIVIA (JUEGO)                    -->
+        <!-- ========================================== -->
+        <section id="view-trivia" class="animate-view px-5 pb-5 hide">
+            <div class="bg-gradient-brand p-8 rounded-[2.5rem] shadow-xl text-white text-center mb-6">
+                <span class="text-5xl block mb-2">🏆</span>
+                <h2 class="text-3xl font-brand italic mb-2">Trivia Challenger</h2>
+                <p class="text-purple-100 text-sm">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
+            </div>
+
+            <!-- Pantalla Inicio Trivia -->
+            <div id="trivia-start" class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100 text-center">
+                <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 rounded-xl bg-stone-50 mb-4 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900">
+                <p id="name-error" class="text-rose-500 font-bold text-xs hide mb-4">¡Ingresá tu nombre para jugar!</p>
+                <button onclick="startTrivia()" class="w-full py-4 bg-purple-700 text-white rounded-xl font-black shadow-lg active:scale-95 transition">¡EMPEZAR A JUGAR!</button>
+            </div>
+
+            <!-- Pantalla Preguntas -->
+            <div id="trivia-quiz" class="hide">
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <span id="quiz-progress" class="text-xs font-black text-purple-700 uppercase">Pregunta 1/10</span>
+                    <span id="quiz-score" class="text-xs font-black text-emerald-600 uppercase">Puntos: 0</span>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 mb-4 min-h-[160px] flex items-center justify-center text-center">
+                    <p id="question-text" class="font-bold text-lg leading-tight text-stone-800">¿Pregunta aquí?</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="checkAnswer(true)" class="py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black shadow-sm active:scale-95 transition">VERDADERO</button>
+                    <button onclick="checkAnswer(false)" class="py-5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black shadow-sm active:scale-95 transition">FALSO</button>
+                </div>
+            </div>
+
+            <!-- Pantalla Final -->
+            <div id="trivia-end" class="hide text-center py-8">
+                <h3 class="text-3xl font-brand italic mb-2 text-stone-800">¡Finalizado!</h3>
+                <p class="text-stone-500 text-sm mb-6">Tu puntaje se guardó en la base de datos.</p>
+                <div class="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm inline-block px-10 mb-8">
+                    <p class="text-xs font-bold text-stone-400 uppercase mb-1">Puntaje Total</p>
+                    <p id="final-score" class="text-5xl font-black text-purple-700 leading-none">0</p>
+                </div>
+                <button onclick="switchTab('ranking')" class="w-full py-4 bg-stone-900 text-white rounded-xl font-black shadow-lg active:scale-95 transition">VER RANKING</button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VISTA 4: RANKING                           -->
+        <!-- ========================================== -->
+        <section id="view-ranking" class="animate-view px-5 pb-5 hide">
+            <h2 class="text-3xl font-brand italic mb-1 text-stone-900 leading-none">Ranking Oficial</h2>
+            <p class="text-stone-500 text-sm mb-6">Las goleadoras mentales del torneo.</p>
+            
+            <div class="bg-white rounded-[2rem] shadow-sm border border-stone-100 p-2">
+                <div id="leaderboard-list" class="space-y-2">
+                    <p class="text-center text-stone-400 text-sm py-8">Cargando posiciones...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VISTAS DE ESCRITORIO (STREAM / MODERACIÓN) -->
+        <!-- ========================================== -->
+        
+        <!-- STREAM PANTALLA GIGANTE -->
+        <section id="view-stream" class="fixed inset-0 bg-[#faf9f6] z-[150] hide flex flex-col lg:flex-row overflow-hidden">
+            <div class="lg:w-1/3 p-10 flex flex-col justify-between bg-white border-r border-stone-100 relative shrink-0">
+                <div>
+                    <div class="flex gap-4 items-center mb-8">
+                        <img src="logo.png" alt="Logo" class="h-16 w-auto object-contain" onerror="this.style.display='none'">
+                        <button onclick="switchTab('inicio')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200">Salir del Stream</button>
+                    </div>
+                    <h1 class="text-6xl font-brand italic mb-2 leading-none tracking-tighter">Festival <span class="text-gradient">Nosotras</span></h1>
+                    <p class="text-stone-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-12">Copa Challenger · Río Turbio</p>
+                    
+                    <div class="bg-stone-900 rounded-[3rem] p-10 text-center text-white shadow-2xl">
+                        <span class="block text-purple-300 font-bold uppercase text-xs mb-2 tracking-widest">Mensajes en Vivo</span>
+                        <span id="stream-counter" class="text-[8rem] font-black tracking-tighter tabular-nums leading-none block mb-6">0</span>
+                        
+                        <div class="border-t border-white/20 pt-6 mt-6">
+                            <span class="block text-emerald-300 font-bold uppercase text-xs mb-2 tracking-widest">Jugadores Trivia</span>
+                            <span id="stream-trivia-counter" class="text-4xl font-black tabular-nums">0</span>
+                        </div>
                     </div>
                 </div>
                 
-                <h1 class="text-6xl font-brand italic mb-2 leading-none tracking-tighter">Festival <span class="text-brand">Nosotras</span></h1>
-                <p class="text-stone-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-12 italic">Copa Challenger · Río Turbio</p>
-                
-                <div class="bg-white rounded-[4rem] p-12 text-center border border-stone-100 shadow-sm relative overflow-hidden">
-                    <div id="counter-flash" class="absolute inset-0 bg-emerald-500/10 opacity-0 transition-opacity duration-300"></div>
-                    <span class="block text-stone-400 font-bold uppercase text-[10px] mb-4 tracking-widest">Asistencias en Vivo</span>
-                    <span id="stream-counter" class="text-[12rem] font-black tracking-tighter text-stone-900 tabular-nums leading-none">0</span>
+                <div class="mt-8 space-y-3">
+                    <button onclick="iniciarSorteo()" class="w-full py-4 bg-purple-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-purple-500 transition">🎲 Sorteo Trivia</button>
+                    <p id="sorteo-error" class="text-rose-500 font-bold text-xs text-center hide">¡Mínimo 3 jugadores necesarios!</p>
                 </div>
             </div>
+
+            <div class="flex-1 p-10 overflow-y-auto no-scrollbar relative" id="stream-feed">
+                <!-- Sorteo Overlay (Oculto por defecto) -->
+                <div id="sorteo-overlay" class="absolute inset-0 bg-[#faf9f6]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center hide">
+                    <h2 class="text-6xl font-brand italic mb-4 text-stone-800">Sorteo Especial 🎁</h2>
+                    <div class="bg-white p-12 rounded-[4rem] w-full max-w-3xl border-4 border-purple-200 mb-10 h-64 flex items-center justify-center shadow-2xl">
+                        <span id="sorteo-name" class="text-6xl font-black uppercase italic text-stone-300 text-center">¿QUIÉN GANARÁ?</span>
+                    </div>
+                    <button onclick="cerrarSorteo()" class="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-black text-xl">Volver al Muro</button>
+                </div>
+
+                <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8 space-y-8"></div>
+            </div>
+        </section>
+
+        <!-- MODERACIÓN -->
+        <section id="view-admin" class="fixed inset-0 bg-rose-50 z-[150] hide p-10 overflow-y-auto">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-10">
+                    <h2 class="text-4xl font-black text-rose-900 italic">Moderación 🛠️</h2>
+                    <button onclick="switchTab('inicio')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg">Cerrar Moderación</button>
+                </div>
+                <div id="admin-feed-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (4 BOTONES VISIBLES) -->
+    <nav id="mobile-nav" class="bg-white border-t border-stone-200 nav-shadow px-2 py-3 flex justify-between items-center z-50 pb-safe">
+        
+        <!-- 1. Inicio -->
+        <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-purple-700 bg-purple-50 transition-all">
+            <span class="text-2xl leading-none">🏟️</span>
+            <span class="text-[10px] font-black uppercase tracking-tight">Inicio</span>
+        </button>
+
+        <!-- 2. Mensaje -->
+        <button onclick="switchTab('mensaje')" id="tab-mensaje" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <span class="text-2xl leading-none">💜</span>
+            <span class="text-[10px] font-black uppercase tracking-tight">Mensaje</span>
+        </button>
+
+        <!-- 3. Trivia -->
+        <button onclick="switchTab('trivia')" id="tab-trivia" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <span class="text-2xl leading-none">🏆</span>
+            <span class="text-[10px] font-black uppercase tracking-tight">Trivia</span>
+        </button>
+
+        <!-- 4. Ranking -->
+        <button onclick="switchTab('ranking')" id="tab-ranking" class="nav-btn w-1/4 py-2 flex flex-col items-center justify-center gap-1 rounded-2xl text-stone-400 hover:text-stone-700 transition-all">
+            <span class="text-2xl leading-none">📊</span>
+            <span class="text-[10px] font-black uppercase tracking-tight">Ranking</span>
+        </button>
+        
+    </nav>
+
+    <!-- SCRIPT DE INTERFAZ Y TRIVIA -->
+    <script>
+        window.ADMIN_PIN = "5259";
+        window.pendingView = null;
+        window.currentActiveView = 'inicio';
+
+        window.safeSwitchView = (viewId) => {
+            window.pendingView = viewId;
+            document.getElementById('pin-modal').classList.remove('hide');
+            document.getElementById('pin-input').focus();
+        };
+
+        window.checkPin = () => {
+            const input = document.getElementById('pin-input');
+            if (input.value === window.ADMIN_PIN) {
+                window.closePinModal();
+                window.switchTab(window.pendingView);
+            } else {
+                input.value = "";
+                input.style.border = "2px solid red";
+                setTimeout(() => input.style.border = "2px solid transparent", 500);
+            }
+        };
+
+        window.closePinModal = () => {
+            document.getElementById('pin-modal').classList.add('hide');
+            document.getElementById('pin-input').value = "";
+            window.pendingView = null;
+        };
+
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hide'));
+            document.getElementById('view-' + tabId).classList.remove('hide');
             
-            <div class="relative z-10 bg-purple-900 text-white p-8 rounded-[2.5rem] shadow-2xl mt-8">
-                <p class="text-lg font-brand italic leading-tight">"En el fútbol como en la vida, jugar en equipo es cuidar la salud mental."</p>
-            </div>
-        </div>
+            if(tabId === 'stream' || tabId === 'admin') {
+                document.getElementById('mobile-header').classList.add('hide');
+                document.getElementById('mobile-nav').classList.add('hide');
+            } else {
+                document.getElementById('mobile-header').classList.remove('hide');
+                document.getElementById('mobile-nav').classList.remove('hide');
+                
+                // Efecto visual en la barra inferior
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('text-purple-700', 'bg-purple-50'); 
+                    btn.classList.add('text-stone-400');
+                });
+                const activeBtn = document.getElementById('tab-' + tabId);
+                if(activeBtn) {
+                    activeBtn.classList.remove('text-stone-400'); 
+                    activeBtn.classList.add('text-purple-700', 'bg-purple-50');
+                }
+            }
+            
+            window.currentActiveView = tabId;
+            if(window.renderFeed) window.renderFeed();
+            document.getElementById('main-content').scrollTop = 0;
+        };
 
-        <div class="flex-1 p-10 overflow-y-auto no-scrollbar pb-32" id="stream-feed">
-            <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-8 space-y-8"></div>
-        </div>
+        // --- Lógica Trivia ---
+        window.currentQuestion = 0; window.score = 0; window.playerName = "";
+        window.selectedQuestions = []; window.questionStartTime = 0;
+        
+        const allQuestions = [
+            // FÚTBOL FEMENINO - HISTORIA Y REGLAS
+            { text: "¿El fútbol femenino estuvo prohibido en países como Inglaterra y Brasil por casi 50 años?", ans: true },
+            { text: "¿Marta Vieira da Silva tiene más goles en Mundiales que Pelé o Messi?", ans: true },
+            { text: "¿En el fútbol femenino, la cancha y los arcos son más chicos que en el masculino?", ans: false }, 
+            { text: "¿Las 'Pioneras' argentinas le ganaron a Inglaterra 4-1 en el Mundial de 1971?", ans: true },
+            { text: "¿La pelota de fútbol femenino es número 4, más liviana que la de los hombres?", ans: false }, 
+            { text: "¿Un partido oficial de fútbol femenino dura 80 minutos en total?", ans: false }, 
+            { text: "¿Alexia Putellas fue la primera mujer en ganar dos Balones de Oro consecutivos?", ans: true },
+            { text: "¿El Día de la Futbolista Argentina se celebra el 21 de agosto por los 4 goles a Inglaterra?", ans: true },
+            { text: "¿La regla del offside (fuera de juego) se aplica diferente en el fútbol femenino?", ans: false }, 
+            { text: "¿El primer Mundial Oficial de la FIFA para mujeres se jugó recién en 1991?", ans: true },
+            { text: "¿Estefanía Banini fue elegida en el 11 ideal de la FIFA en 2021?", ans: true },
+            { text: "¿Megan Rapinoe es la máxima goleadora histórica de la selección argentina?", ans: false }, 
+            { text: "¿Las tarjetas amarillas y rojas se inventaron primero para el fútbol femenino?", ans: false }, 
+            { text: "¿El primer club de fútbol femenino registrado en la historia se fundó en 1895?", ans: true },
+            { text: "¿En los Juegos Olímpicos, el fútbol femenino se incluyó antes que el masculino?", ans: false },
+            { text: "¿La Copa Mundial Femenina 2023 rompió récords de asistencia con casi 2 millones de espectadores?", ans: true },
+            { text: "¿El fútbol femenino en Argentina es 100% profesional en todas sus divisiones?", ans: false }, 
+            { text: "¿La Copa Challenger de Río Turbio es uno de los torneos femeninos más importantes de la Cuenca?", ans: true },
+            { text: "¿Ada Hegerberg fue la primera ganadora del Balón de Oro femenino en la historia (2018)?", ans: true },
+            { text: "¿Los botines de fútbol femenino tienen tapones diferentes por la forma del pie?", ans: false }, 
+            { text: "¿Brasil ganó todos los mundiales femeninos disputados hasta la fecha?", ans: false }, 
+            { text: "¿Estados Unidos es la selección con más Mundiales Femeninos ganados (4 en total)?", ans: true },
+            { text: "¿El fútbol femenino fue deporte de exhibición en el primer Mundial de Uruguay 1930?", ans: false }, 
+            { text: "¿Macarena Sánchez fue la primera argentina en firmar un contrato profesional de fútbol?", ans: true },
+            { text: "¿En el mundial de 1971, las jugadoras argentinas viajaron sin botines ni entrenador oficial?", ans: true },
+            { text: "¿La capitana de un equipo tiene permitido insultar al árbitro sin recibir tarjeta?", ans: false },
+            { text: "¿El 'Tercer Tiempo' es obligatorio por reglamento de la FIFA en el fútbol femenino?", ans: false }, 
+            { text: "¿Las mujeres se lesionan los ligamentos cruzados (LCA) con más frecuencia que los hombres por su anatomía?", ans: true },
+            
+            // SALUD MENTAL EN EL DEPORTE
+            { text: "¿Sentir nervios antes de un partido significa que no estás preparada mentalmente?", ans: false }, 
+            { text: "¿La 'visualización' es imaginar jugadas con éxito y realmente mejora el rendimiento?", ans: true },
+            { text: "¿Llorar después de perder una final demuestra que la jugadora es psicológicamente débil?", ans: false }, 
+            { text: "¿El estrés crónico por presión puede aumentar las posibilidades de sufrir desgarros musculares?", ans: true },
+            { text: "¿Si una compañera tiene un ataque de pánico, la mejor ayuda es gritarle '¡Calmate, no es para tanto!'?", ans: false }, 
+            { text: "¿Hablar abiertamente de tus problemas de salud mental te hace una líder más débil?", ans: false }, 
+            { text: "¿El 'Síndrome del Impostor' es sentir que tus logros fueron por suerte y no por tu esfuerzo?", ans: true },
+            { text: "¿Ir al psicólogo deportivo es solo para jugadoras que están por abandonar el fútbol?", ans: false }, 
+            { text: "¿Dormir menos de 6 horas reduce tus reflejos y capacidad de decisión en la cancha?", ans: true },
+            { text: "¿El 'Burnout' es cuando sentís un agotamiento mental tan extremo que odiás ir a entrenar?", ans: true },
+            { text: "¿Tener un ritual (como atarse primero el botín derecho) ayuda a reducir la ansiedad pre-partido?", ans: true },
+            { text: "¿Para tener 'buena salud mental' hay que estar siempre feliz y positiva, sin enojarse nunca?", ans: false }, 
+            { text: "¿Respirar profundamente por la nariz e inflar la panza ayuda a bajar las pulsaciones?", ans: true },
+            { text: "¿La empatía significa darle siempre la razón a tu compañera aunque se equivoque?", ans: false }, 
+            { text: "¿El cerebro humano NO distingue entre un recuerdo traumático y algo que está pasando ahora mismo?", ans: true },
+            { text: "¿Las emociones 'negativas' como el enojo no sirven para nada y hay que reprimirlas siempre?", ans: false }, 
+            { text: "¿Transpirar mucho o tener taquicardia antes de salir a la cancha siempre es señal de un trastorno de ansiedad grave?", ans: false }, 
+            { text: "¿Pedir el cambio porque estás 'quemada' de la cabeza es una falta de respeto al equipo?", ans: false }, 
+            { text: "¿El aliento de la hinchada realmente cambia los químicos del cerebro (dopamina) de la jugadora?", ans: true },
+            { text: "¿Un partido empatado puede generar más fatiga mental que una derrota por goleada?", ans: true },
+            { text: "¿La resiliencia es la capacidad de volver a intentar y adaptarse después de haber fracasado o sufrido?", ans: true },
+            { text: "¿Una buena comunicación gritando a tus compañeras en la cancha reduce el cortisol (hormona del estrés)?", ans: false }, 
+            { text: "¿Si sos suplente, no necesitás entrenar la mente porque no tenés presión?", ans: false }, 
+            { text: "¿La motivación 'extrínseca' (jugar solo por plata o trofeos) a la larga dura menos que el amor genuino al juego?", ans: true },
+            { text: "¿El 'Flow' (estar en la zona) es un estado mental donde jugás muy concentrada y en automático?", ans: true },
+            { text: "¿Las jugadoras muy perfeccionistas tienen menos probabilidades de frustrarse al errar un pase?", ans: false }, 
+            { text: "¿Aceptar rápido que te equivocaste en una jugada te ayuda a concentrarte mejor en la siguiente?", ans: true },
+            { text: "¿El 'descanso invisible' incluye apagar el celular una hora antes de dormir para relajar la mente?", ans: true },
+            { text: "¿Enfocarte solo en el resultado (ganar o perder) genera más ansiedad que enfocarte en tu propio rendimiento?", ans: true },
+            { text: "¿La terapia psicológica está prohibida por la FIFA por considerarse ventaja deportiva desleal?", ans: false }, 
+            
+            // PREGUNTAS MIXTAS / TRAMPA / FESTIVAL NOSOTRAS
+            { text: "¿Simone Biles y Naomi Osaka son atletas mundiales que pausaron su carrera para cuidar su salud mental?", ans: true },
+            { text: "¿El Festival Nosotras promueve la competencia tóxica entre las mujeres de la Cuenca?", ans: false }, 
+            { text: "¿Escuchar música en el vestuario antes de jugar aísla a la jugadora y arruina la química del equipo?", ans: false }, 
+            { text: "¿Si te enojás ciegamente con el árbitro, tu visión periférica se reduce y tomás peores decisiones?", ans: true },
+            { text: "¿Las 'Pioneras' de 1971 jugaron su mundial en el Estadio Azteca frente a 100.000 personas?", ans: true },
+            { text: "¿Decir 'no puedo más, necesito ayuda' a tu entrenadora es motivo de expulsión automática?", ans: false }, 
+            { text: "¿Un 'Pase Invisible' es apoyar emocionalmente a una compañera que no la está pasando bien?", ans: true },
+            { text: "¿La salud mental se entrena y se cuida de la misma forma que se entrena la técnica para patear un penal?", ans: true },
+            { text: "¿El Dibu Martínez fue multado económicamente por decir que hace terapia después de los partidos?", ans: false }, 
+            { text: "¿Si el equipo va perdiendo 3-0, una actitud corporal negativa (cabeza gacha, hombros caídos) empeora aún más el juego?", ans: true },
+            { text: "¿Reírse o bailar en el vestuario antes de una final desconcentra y aumenta las chances de perder el partido?", ans: false }, 
+            { text: "¿El fútbol femenino tiene un índice de abandono más alto en la adolescencia por falta de apoyo y contención?", ans: true }
+        ];
 
-        <!-- ZÓCALO TICKER -->
-        <div class="absolute bottom-0 left-0 w-full bg-stone-900 text-white py-4 overflow-hidden z-30 flex items-center shadow-2xl">
-            <div class="bg-purple-700 px-6 py-4 absolute left-0 z-40 font-black italic text-sm tracking-widest border-r border-white/20">EL ÁRBOL STREAM</div>
-            <div class="whitespace-nowrap flex animate-ticker pl-[150px]">
-                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">⚽ Copa Challenger Femenina: El apoyo de la tribuna se siente en la cancha.</span>
-                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">🌳 Salud Mental: Pedir ayuda es la jugada más valiente.</span>
-                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">💜 Festival Nosotras: Río Turbio unido por el deporte e igualdad.</span>
-                <span class="mx-10 font-bold italic text-sm uppercase tracking-wider">🎙️ Transmisión producida por el Taller de Stream del Centro de Día El Árbol.</span>
-            </div>
-        </div>
-    </section>
+        window.startTrivia = () => {
+            const nameInput = document.getElementById('player-name');
+            if(!nameInput.value.trim()) {
+                const err = document.getElementById('name-error');
+                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
+            }
+            window.playerName = nameInput.value.trim();
+            document.getElementById('trivia-start').classList.add('hide');
+            document.getElementById('trivia-quiz').classList.remove('hide');
+            
+            window.selectedQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 10); 
+            window.currentQuestion = 0; window.score = 0;
+            window.showQuestion();
+        };
 
-    <!-- VISTA 4: MODERACIÓN -->
-    <section id="view-admin" class="min-h-screen hide p-10 bg-rose-50 flex flex-col items-center overflow-y-auto">
-        <div class="max-w-6xl w-full">
-            <div class="flex items-center justify-between mb-10">
-                <div>
-                    <h2 class="text-4xl font-black text-rose-900 mb-2 italic">Moderación 🛠️</h2>
-                    <p class="text-rose-700 font-medium">Borra mensajes que no correspondan a la Copa Challenger.</p>
-                </div>
-                <button onclick="safeSwitchView('stream')" class="bg-rose-900 hover:bg-rose-950 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition">Volver al Stream</button>
-            </div>
-            <div id="admin-feed-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
-        </div>
-    </section>
+        window.showQuestion = () => {
+            if(window.currentQuestion >= window.selectedQuestions.length) { window.finishTrivia(); return; }
+            document.getElementById('quiz-progress').textContent = `Pregunta ${window.currentQuestion + 1}/${window.selectedQuestions.length}`;
+            document.getElementById('question-text').textContent = window.selectedQuestions[window.currentQuestion].text;
+            window.questionStartTime = Date.now(); 
+        };
+
+        window.checkAnswer = (userAns) => {
+            const timeTaken = Date.now() - window.questionStartTime;
+            if(userAns === window.selectedQuestions[window.currentQuestion].ans) {
+                let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
+                window.score += (100 + speedBonus);
+                document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+            }
+            window.currentQuestion++; window.showQuestion();
+        };
+
+        window.finishTrivia = () => {
+            document.getElementById('trivia-quiz').classList.add('hide');
+            document.getElementById('trivia-end').classList.remove('hide');
+            document.getElementById('final-score').textContent = window.score;
+            if(window.guardarPuntajeDB) window.guardarPuntajeDB();
+        };
+
+        // --- Lógica Sorteo ---
+        window.sorteoInterval = null;
+        window.iniciarSorteo = () => {
+            if(!window.allResultsData || window.allResultsData.length <= 2) {
+                const err = document.getElementById('sorteo-error');
+                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
+            }
+            document.getElementById('sorteo-overlay').classList.remove('hide');
+            const nameDisplay = document.getElementById('sorteo-name');
+            nameDisplay.classList.add('animate-roulette', 'text-stone-300');
+            nameDisplay.classList.remove('text-purple-700', 'scale-125');
+
+            const eligible = window.allResultsData.slice(2);
+            let counter = 0;
+            window.sorteoInterval = setInterval(() => {
+                const randomPlayer = eligible[Math.floor(Math.random() * eligible.length)];
+                nameDisplay.textContent = randomPlayer.name;
+                counter++;
+                if(counter > 40) {
+                    clearInterval(window.sorteoInterval);
+                    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+                    nameDisplay.textContent = "🎉 " + winner.name + " 🎉";
+                    nameDisplay.classList.remove('animate-roulette', 'text-stone-300');
+                    nameDisplay.classList.add('text-purple-700', 'scale-125', 'transition-transform', 'duration-500');
+                }
+            }, 100);
+        };
+        window.cerrarSorteo = () => { document.getElementById('sorteo-overlay').classList.add('hide'); clearInterval(window.sorteoInterval); };
+    </script>
+
+    <!-- SCRIPT DE FIREBASE GLOBAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE
+        // Obtenemos de forma segura la configuración inyectada por el entorno
         const firebaseConfigText = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-        const firebaseConfig = firebaseConfigText ? JSON.parse(firebaseConfigText) : {
-            apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
-            authDomain: "copa-8m-stream.firebaseapp.com",
-            projectId: "copa-8m-stream",
-            storageBucket: "copa-8m-stream.firebasestorage.app",
-            messagingSenderId: "650833891517",
-            appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
-        };
+        let firebaseConfig;
+        
+        if (firebaseConfigText) {
+            firebaseConfig = typeof firebaseConfigText === 'string' ? JSON.parse(firebaseConfigText) : firebaseConfigText;
+        } else {
+            // Configuración de respaldo (Tus credenciales reales)
+            firebaseConfig = {
+                apiKey: "AIzaSyB18L89Ojsh-PGrF29FP9VhB3ZmxDW31wY",
+                authDomain: "copa-8m-stream.firebaseapp.com",
+                projectId: "copa-8m-stream",
+                storageBucket: "copa-8m-stream.firebasestorage.app",
+                messagingSenderId: "650833891517",
+                appId: "1:650833891517:web:bfa5350b0cec07887f67d4"
+            };
+        }
+        
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'copa-8m-stream';
 
         const app = initializeApp(firebaseConfig);
@@ -209,73 +511,259 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-        let activeView = 'home';
-        let allPases = [];
-        let allRespuestas = [];
-        let pasesCount = 0;
-        let pendingView = null;
+        window.allPases = [];
+        window.allRespuestas = [];
+        window.allResultsData = [];
         let paseToDelete = null;
 
-        // NUEVO PIN DE SEGURIDAD
-        const ADMIN_PIN = "5259";
-
-        window.safeSwitchView = (viewId) => {
-            if (viewId === 'admin' || viewId === 'stream') {
-                pendingView = viewId;
-                document.getElementById('pin-modal').classList.remove('hide');
-                document.getElementById('pin-input').focus();
-            } else {
-                switchView(viewId);
-            }
-        };
-
-        window.checkPin = () => {
-            const input = document.getElementById('pin-input');
-            if (input.value === ADMIN_PIN) {
-                switchView(pendingView);
-                closePinModal();
-            } else {
-                input.value = "";
-                input.classList.add('animate-shake'); 
-                setTimeout(() => input.classList.remove('animate-shake'), 400);
-            }
-        };
-
-        window.closePinModal = () => {
-            document.getElementById('pin-modal').classList.add('hide');
-            document.getElementById('pin-input').value = "";
-            pendingView = null;
-        };
-
-        function switchView(viewId) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hide'));
-            document.getElementById(`view-${viewId}`).classList.remove('hide');
-            activeView = viewId;
-            updateUI();
-            window.scrollTo(0,0);
-        }
-
-        const start = async () => {
+        const startDB = async () => {
             try {
+                // 1. REGLA ESTRICTA: SIEMPRE autenticar PRIMERO y esperar el resultado
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
                 
+                // 2. MANTENER ESTADO Y LEER DATOS SOLO SI HAY USUARIO CONFIRMADO
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user;
-                    if(user) {
-                        const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
-                        onSnapshot(pasesRef, (snap) => {
-                            let prevCount = pasesCount;
-                            allPases = [];
-                            snap.forEach(doc => allPases.push({id: doc.id, ...doc.data()}));
-                            allPases.sort((a,b) => b.timestamp - a.timestamp);
-                            pasesCount = allPases.length;
-                            
-                            if(pasesCount > prevCount && activeView === 'stream') {
-                                const flash = document.getElementById('counter-flash');
-                                if(flash) { flash.style.opacity = 1; setTimeout(() => flash.style.opacity = 0, 1000); }
-                            }
-                            updateUI();
+                    if (user) {
+                        iniciarLecturasDb();
+                    }
+                });
+            } catch (err) { 
+                console.error("Error Firebase Auth:", err); 
+            }
+        };
+
+        function iniciarLecturasDb() {
+            // LECTURAS BÁSICAS (Sin queries complejos para evitar errores de índices)
+            const pasesRef = collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo');
+            onSnapshot(pasesRef, (snap) => {
+                window.allPases = [];
+                snap.forEach(doc => window.allPases.push({id: doc.id, ...doc.data()}));
+                
+                // Filtramos y ordenamos en la memoria local (JavaScript)
+                window.allPases.sort((a,b) => b.timestamp - a.timestamp);
+                
+                const elCounter = document.getElementById('stream-counter');
+                if (elCounter) elCounter.textContent = window.allPases.length;
+                if(window.renderFeed) window.renderFeed();
+            }, (err) => { 
+                console.error("Error cargando pases:", err); 
+            });
+
+            const respuestasRef = collection(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo');
+            onSnapshot(respuestasRef, (snap) => {
+                window.allRespuestas = [];
+                snap.forEach(doc => window.allRespuestas.push({id: doc.id, ...doc.data()}));
+                window.allRespuestas.sort((a,b) => a.timestamp - b.timestamp);
+                if(window.renderFeed) window.renderFeed();
+            }, (err) => { 
+                console.error("Error cargando respuestas:", err); 
+            });
+
+            const triviaRef = collection(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados');
+            onSnapshot(triviaRef, (snap) => {
+                const results = [];
+                snap.forEach(doc => results.push(doc.data()));
+                results.sort((a,b) => b.score - a.score);
+                window.allResultsData = results; 
+                const elTrivia = document.getElementById('stream-trivia-counter');
+                if (elTrivia) elTrivia.textContent = results.length;
+                if(window.renderLeaderboard) window.renderLeaderboard(results);
+            }, (err) => { 
+                console.error("Error cargando trivia:", err); 
+            });
+        }
+
+        // Iniciamos el motor
+        startDB();
+
+        window.guardarPuntajeDB = async () => {
+            if(!currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados', currentUser.uid);
+            await setDoc(ref, { 
+                name: window.playerName, 
+                score: window.score, 
+                timestamp: Date.now(),
+                userId: currentUser.uid
+            });
+        };
+
+        window.renderLeaderboard = function(data) {
+            const list = document.getElementById('leaderboard-list');
+            if(!list) return;
+            list.innerHTML = '';
+            if(data.length === 0) { list.innerHTML = '<p class="text-center text-stone-400 text-sm py-8">No hay puntajes aún. ¡Sé la primera!</p>'; return; }
+            
+            data.slice(0, 15).forEach((item, index) => {
+                const div = document.createElement('div');
+                let styles = 'bg-white border-stone-100'; let medal = '';
+                if(index === 0) { styles = 'bg-gradient-to-r from-yellow-300 to-yellow-500 text-yellow-900 border-yellow-400 shadow-md font-black'; medal = '🥇'; } 
+                else if(index === 1) { styles = 'bg-gradient-to-r from-stone-200 to-stone-400 text-stone-800 border-stone-400 shadow-sm font-bold'; medal = '🥈'; } 
+                else if(index === 2) { styles = 'bg-gradient-to-r from-amber-600 to-orange-700 text-white border-amber-800 shadow-sm font-bold'; medal = '🥉'; }
+                
+                div.className = `flex items-center justify-between p-4 rounded-2xl border ${styles}`;
+                div.innerHTML = `<div class="flex items-center gap-4"><span class="text-2xl w-8 text-center">${medal || `<span class="opacity-40 text-lg font-black italic">#${index + 1}</span>`}</span><span class="text-sm font-bold uppercase tracking-tight">${item.name}</span></div><span class="text-lg font-black tabular-nums">${item.score} <small class="text-[8px] uppercase opacity-50">PTS</small></span>`;
+                list.appendChild(div);
+            });
+        };
+
+        window.renderFeed = () => {
+            const grids = {
+                stream: document.getElementById('feed-grid'),
+                inicio: document.getElementById('participant-feed-content'),
+                admin: document.getElementById('admin-feed-content')
+            };
+            Object.values(grids).forEach(g => { if(g) g.innerHTML = ''; });
+            
+            window.allPases.slice(0, 40).forEach(p => {
+                if(grids[window.currentActiveView]) grids[window.currentActiveView].appendChild(crearCard(p, window.currentActiveView));
+            });
+        };
+
+        function crearCard(p, modo) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 flex flex-col card-enter';
+            if(modo === 'stream') card.classList.add('break-inside-avoid');
+
+            const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-auto object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
+            const likes = p.likes || 0;
+            const respuestas = window.allRespuestas ? window.allRespuestas.filter(r => r.parentId === p.id) : [];
+
+            card.innerHTML = `
+                ${media}
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2 text-xs">
+                        <span class="font-black text-purple-900 uppercase tracking-tighter">${p.sender}</span>
+                        <span class="text-emerald-500 text-[8px] font-black">▶</span>
+                        <span class="font-black text-emerald-800 uppercase tracking-tighter">${p.receiver}</span>
+                    </div>
+                    ${p.mensaje ? `<p class="text-stone-600 text-sm italic font-medium leading-relaxed mb-4">"${p.mensaje}"</p>` : ''}
+                    
+                    <div class="flex items-center justify-between mt-2">
+                        <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full text-rose-600 border border-rose-100 active:scale-95 transition">
+                            <span class="text-sm">❤️</span><span class="text-xs font-black tabular-nums">${likes}</span>
+                        </button>
+                        ${modo === 'admin' ? `<button onclick="eliminarPase('${p.id}')" class="text-[10px] font-bold text-white bg-rose-500 px-3 py-1.5 rounded-lg">Borrar</button>` : ''}
+                    </div>
+
+                    ${respuestas.length > 0 || modo === 'inicio' ? `
+                    <div class="mt-4 pt-4 border-t border-stone-100">
+                        <div class="max-h-32 overflow-y-auto no-scrollbar space-y-2 mb-3">
+                            ${respuestas.map(r => `<div class="bg-stone-50 p-2.5 rounded-xl text-[10px] text-stone-600 italic break-words border border-stone-100"><span class="font-bold text-purple-700 not-italic">💬</span> ${r.texto}</div>`).join('')}
+                        </div>
+                        ${modo === 'inicio' ? `
+                        <div class="flex gap-2">
+                            <input type="text" id="reply-input-${p.id}" placeholder="Responder..." class="flex-1 bg-stone-50 px-3 py-2 rounded-xl text-[10px] outline-none focus:ring-1 focus:ring-purple-300 border border-stone-200">
+                            <button onclick="enviarRespuesta('${p.id}')" class="bg-purple-100 text-purple-700 hover:bg-purple-200 px-3 py-2 rounded-xl text-[10px] font-bold transition">Enviar</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            return card;
+        }
+
+        window.enviarRespuesta = async (parentId) => {
+            if(!currentUser) return;
+            const input = document.getElementById(`reply-input-${parentId}`);
+            if (!input) return;
+            const text = input.value.trim();
+            if(!text) return;
+            
+            input.disabled = true;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo'), {
+                    parentId: parentId,
+                    texto: text,
+                    timestamp: Date.now(),
+                    userId: currentUser.uid
+                });
+                input.value = '';
+            } catch(e) { console.error("Error al enviar respuesta:", e); } 
+            finally { input.disabled = false; }
+        };
+
+        window.reaccionar = async (paseId) => {
+            if(!currentUser) return;
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo', paseId);
+            await updateDoc(ref, { likes: increment(1) });
+        };
+
+        window.eliminarPase = (paseId) => {
+            paseToDelete = paseId;
+            document.getElementById('confirm-modal').classList.remove('hide');
+        };
+
+        window.closeConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hide'); paseToDelete = null; };
+
+        document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+            if (paseToDelete && currentUser) {
+                const btn = document.getElementById('btn-confirm-delete'); btn.textContent = "Borrando...";
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo', paseToDelete));
+                } catch (err) { console.error(err); } finally {
+                    window.closeConfirmModal(); btn.textContent = "Borrar";
+                }
+            }
+        });
+
+        const fotoInput = document.getElementById('foto-input');
+        const previewImg = document.getElementById('preview-img');
+        const placeholderUi = document.getElementById('placeholder-ui');
+        let currentImgBase64 = null;
+
+        fotoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height, max = 500;
+                    if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    currentImgBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                    previewImg.src = currentImgBase64;
+                    previewImg.classList.remove('hide'); placeholderUi.classList.add('hide');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('pase-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.textContent = "SUBIENDO...";
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo'), {
+                    sender: document.getElementById('sender').value.trim() || 'Anónimo',
+                    receiver: document.getElementById('receiver').value.trim() || 'Alguien',
+                    mensaje: document.getElementById('texto-mensaje').value.trim(),
+                    imagen: currentImgBase64,
+                    likes: 0,
+                    timestamp: Date.now(),
+                    userId: currentUser.uid
+                });
+                btn.textContent = "¡HECHO! ✨";
+                setTimeout(() => {
+                    e.target.reset(); currentImgBase64 = null;
+                    previewImg.classList.add('hide'); placeholderUi.classList.remove('hide');
+                    btn.disabled = false; btn.textContent = "ENVIAR MENSAJE 💜";
+                    window.switchTab('inicio'); 
+                }, 1500);
+            } catch (err) { 
+                console.error("Error subiendo el pase:", err);
+                btn.disabled = false; btn.textContent = "ERROR ❌"; 
+            }
+        });
+    </script>
+</body>
+</html>
