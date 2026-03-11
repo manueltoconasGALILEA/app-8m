@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -26,27 +26,56 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-view { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Animaciones para la transición */
+        /* Ajuste VITAL para que la barra de iOS/Android no tape los botones */
+        .pb-safe { 
+            padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); 
+        }
+
+        /* Animaciones para la transición del 8M */
         @keyframes heartbeat {
             0% { transform: scale(1); opacity: 0.9; }
             50% { transform: scale(1.08); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
         }
-        .animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+        .animate-heartbeat { animation: heartbeat 1.2s ease-in-out infinite; }
+        
+        /* Animación de línea dibujando el Corazón */
+        @keyframes drawHeart {
+            0% { stroke-dashoffset: 100; opacity: 0; fill: rgba(147, 51, 234, 0); }
+            10% { opacity: 1; }
+            70% { stroke-dashoffset: 0; fill: rgba(147, 51, 234, 0); }
+            100% { stroke-dashoffset: 0; opacity: 1; fill: rgba(147, 51, 234, 0.08); }
+        }
+        .svg-heart {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawHeart 1.2s ease-in-out forwards;
+        }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .nav-shadow { box-shadow: 0 -10px 40px rgba(0,0,0,0.08); }
     </style>
 </head>
-<body class="h-screen w-full flex flex-col overflow-hidden selection:bg-purple-200 relative">
+<!-- Usamos h-[100dvh] en vez de h-screen para evitar problemas con la barra inferior del navegador -->
+<body class="h-[100dvh] w-full flex flex-col overflow-hidden selection:bg-purple-200 relative">
 
     <!-- ========================================================================= -->
-    <!-- PANTALLA DE TRANSICIÓN ANIMADA CON EL LOGO DEL ÁRBOL                      -->
+    <!-- PANTALLA DE TRANSICIÓN ANIMADA (8M CORAZÓN Y LOGO)                        -->
     <!-- ========================================================================= -->
     <div id="transition-overlay" class="fixed inset-0 bg-[#f8f7f4]/95 backdrop-blur-md z-[300] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
-        <img src="logo-arbol.jpg" alt="Centro de Día El Árbol" class="h-48 md:h-64 w-auto object-contain mix-blend-multiply animate-heartbeat transition-transform duration-300" onerror="this.style.display='none'; document.getElementById('transition-text').classList.remove('hide');">
-        <p id="transition-text" class="mt-8 text-purple-800 font-black tracking-[0.3em] uppercase text-sm md:text-base animate-pulse hide">Cargando...</p>
+        
+        <div class="relative flex items-center justify-center">
+            <!-- Corazón que se dibuja solo (Especial 8M) -->
+            <svg viewBox="0 0 24 24" class="absolute w-64 h-64 md:w-80 md:h-80 z-0 text-purple-600 drop-shadow-lg">
+                <path class="svg-heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="0.3"/>
+            </svg>
+
+            <!-- Logo de El Árbol latiendo y sin fondo blanco -->
+            <img src="logo-arbol.jpg" alt="Centro de Día El Árbol" class="h-32 md:h-48 w-auto object-contain mix-blend-multiply animate-heartbeat transition-transform duration-300 relative z-10" onerror="this.style.display='none'; document.getElementById('transition-text').classList.remove('hide');">
+        </div>
+
+        <p id="transition-text" class="mt-12 text-purple-800 font-black tracking-[0.3em] uppercase text-sm md:text-base animate-pulse hide">Cargando...</p>
     </div>
 
     <!-- FONDO DECORATIVO PREMIUM PARA NOTEBOOKS -->
@@ -107,7 +136,8 @@
     </header>
 
     <!-- ÁREA PRINCIPAL (SCROLLABLE) -->
-    <main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative w-full" id="main-content">
+    <!-- Incrementado pb-24 a pb-32 para asegurar espacio extra para la botonera -->
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-32 relative w-full" id="main-content">
         
         <!-- ========================================== -->
         <!-- VISTA 1: INICIO (EL MURO)                  -->
@@ -240,7 +270,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 5: PANEL DE CONTROL VIP (NUEVO)      -->
+        <!-- VISTA 5: PANEL DE CONTROL VIP              -->
         <!-- ========================================== -->
         <section id="view-panel-control" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
@@ -250,17 +280,14 @@
                     <p class="text-stone-500 text-sm md:text-base mb-10 font-medium">Opciones exclusivas para la organización del evento.</p>
 
                     <div class="flex flex-col gap-4">
-                        <!-- Ir al Stream -->
                         <button onclick="switchTab('stream')" class="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                             <span class="text-3xl">🖥️</span> Pantalla Stream
                         </button>
 
-                        <!-- Ir al Sorteo -->
                         <button onclick="switchTab('sorteo')" class="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                             <span class="text-3xl">🎁</span> Realizar Sorteo
                         </button>
 
-                        <!-- Ir a Moderación -->
                         <button onclick="switchTab('admin')" class="w-full py-5 bg-rose-600 hover:bg-rose-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                             <span class="text-3xl">🛠️</span> Moderación
                         </button>
@@ -270,7 +297,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- VISTA 6: SORTEO OFICIAL (ACTUALIZADO)      -->
+        <!-- VISTA 6: SORTEO OFICIAL                    -->
         <!-- ========================================== -->
         <section id="view-sorteo" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
@@ -304,7 +331,6 @@
                 <div>
                     <div class="flex gap-4 items-center mb-6">
                         <img src="logo-arbol.jpg" alt="Logo" class="h-14 w-auto object-contain mix-blend-multiply" onerror="this.style.display='none'">
-                        <!-- Ahora el botón de salir vuelve al Panel de Control -->
                         <button onclick="switchTab('panel-control')" class="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold hover:bg-stone-200 transition">⬅️ Volver al Panel</button>
                     </div>
                     
@@ -319,7 +345,7 @@
                     
                     <p class="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-8 bg-stone-100 inline-block px-3 py-1 rounded">Somos Centro de Día El Árbol 🌳</p>
                     
-                    <!-- TABLERO DE TRIVIA (Exclusivo para el Stream) -->
+                    <!-- TABLERO DE TRIVIA -->
                     <div class="bg-stone-900 rounded-[3rem] p-10 text-center text-white shadow-2xl relative overflow-hidden mt-4">
                         <div class="absolute top-0 left-0 w-40 h-40 bg-emerald-500 opacity-20 blur-3xl"></div>
                         <div class="absolute bottom-0 right-0 w-32 h-32 bg-purple-500 opacity-20 blur-3xl"></div>
@@ -336,7 +362,7 @@
                 </div>
             </div>
 
-            <!-- CUADRÍCULA DE MENSAJES (FEED) -->
+            <!-- CUADRÍCULA DE MENSAJES -->
             <div class="flex-1 p-8 overflow-y-auto no-scrollbar relative bg-stone-50/50" id="stream-feed">
                 <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-6"></div>
             </div>
@@ -349,7 +375,6 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
                     <h2 class="text-3xl md:text-4xl font-black text-rose-900 italic">Panel de Moderación 🛠️</h2>
-                    <!-- Ahora el botón de salir vuelve al Panel de Control -->
                     <button onclick="switchTab('panel-control')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-rose-950 transition w-full md:w-auto">⬅️ Volver al Panel</button>
                 </div>
 
@@ -362,7 +387,7 @@
 
                 <div id="admin-jugadores-view" class="hide">
                     <div class="bg-white rounded-[2rem] shadow-md border border-stone-200 p-4 md:p-8">
-                        <p class="text-stone-500 text-sm mb-6 font-medium">Borra a los jugadores con nombres inapropiados. Desaparecerán del ranking y del sorteo.</p>
+                        <p class="text-stone-500 text-sm mb-6 font-medium">Borra a los jugadores con nombres inapropiados.</p>
                         <div id="admin-jugadores-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     </div>
                 </div>
@@ -372,7 +397,8 @@
     </main>
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES VISIBLES) -->
-    <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 pb-safe w-full relative">
+    <!-- Agregado .pb-safe para empujar los botones por encima de la barra de sistema de celulares -->
+    <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe">
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
                 <span class="text-2xl md:text-3xl leading-none">🏟️</span>
@@ -407,15 +433,12 @@
         window.ADMIN_PIN = "5259";
         window.pendingView = null;
         window.currentActiveView = 'inicio';
-        window.isStaffAuthenticated = false; // Variable para saber si ya puso la contraseña
+        window.isStaffAuthenticated = false; 
 
-        // Función especial para el botón STAFF
         window.handleStaffTab = () => {
             if (window.isStaffAuthenticated) {
-                // Si ya puso la clave antes, entra directo al Panel de Control
                 window.switchTab('panel-control');
             } else {
-                // Si no, le pide la clave
                 window.safeSwitchView('panel-control');
             }
         };
@@ -434,7 +457,7 @@
             const input = document.getElementById('pin-input');
             if (!input) return;
             if (input.value === window.ADMIN_PIN) {
-                window.isStaffAuthenticated = true; // Se guarda que ya está autenticado!
+                window.isStaffAuthenticated = true; 
                 const targetView = window.pendingView;
                 window.closePinModal();
                 if (targetView) window.switchTab(targetView);
@@ -453,7 +476,7 @@
             window.pendingView = null;
         };
 
-        // LÓGICA DE TRANSICIÓN ANIMADA
+        // LÓGICA DE TRANSICIÓN ANIMADA CON EL CORAZÓN
         window.switchTab = (tabId) => {
             if (!tabId) return;
 
@@ -468,20 +491,26 @@
             }
 
             const overlay = document.getElementById('transition-overlay');
-            // Animar solo si vamos a una pestaña de la navegación principal (incluido el Panel de Control)
             if (overlay && ['inicio', 'mensaje', 'trivia', 'ranking', 'panel-control'].includes(tabId)) {
                 overlay.classList.remove('pointer-events-none');
                 overlay.style.opacity = '1';
                 
+                // Reiniciar animación del corazón para que se dibuje cada vez
+                const heart = document.querySelector('.svg-heart');
+                if (heart) {
+                    heart.style.animation = 'none';
+                    heart.offsetHeight; // Forzar recarga visual
+                    heart.style.animation = null; 
+                }
+
                 setTimeout(() => {
                     ejecutarCambioDePestana(tabId);
                     setTimeout(() => {
                         overlay.style.opacity = '0';
                         setTimeout(() => { overlay.classList.add('pointer-events-none'); }, 300);
-                    }, 500); // 500ms viendo el logo latiendo
-                }, 200); // Pequeño delay de entrada
+                    }, 800); // 800ms para apreciar cómo se dibuja el corazón
+                }, 200);
             } else {
-                // Modos admin, sorteo y stream van directo sin transición para mayor velocidad
                 ejecutarCambioDePestana(tabId);
             }
         };
@@ -494,7 +523,6 @@
             const mobileHeader = document.getElementById('mobile-header');
             const mobileNav = document.getElementById('mobile-nav');
 
-            // Ocultamos la barra inferior en el Stream y en Moderación
             if(tabId === 'stream' || tabId === 'admin') {
                 if (mobileHeader) mobileHeader.classList.add('hide');
                 if (mobileNav) mobileNav.classList.add('hide');
@@ -502,7 +530,6 @@
                 if (mobileHeader) mobileHeader.classList.remove('hide');
                 if (mobileNav) mobileNav.classList.remove('hide');
                 
-                // Pintamos el botón activo en la barra inferior
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     btn.classList.remove('text-purple-700', 'bg-purple-50'); 
                     btn.classList.add('text-stone-400');
@@ -521,7 +548,6 @@
             if (mainContent) mainContent.scrollTop = 0;
         }
 
-        // Lógica de Pestañas dentro de Moderación
         window.switchAdminTab = (tab) => {
             const btnMsj = document.getElementById('admin-tab-mensajes');
             const btnJug = document.getElementById('admin-tab-jugadores');
@@ -543,7 +569,6 @@
             }
         };
 
-        // --- FUNCION ACTUALIZAR STREAM (MANUAL) ---
         window.forceStreamRefresh = () => {
             const btn = document.getElementById('btn-actualizar-stream');
             if(btn) {
@@ -554,7 +579,6 @@
             if(window.updateStreamTopPlayer) window.updateStreamTopPlayer();
         };
 
-        // --- Lógica Intentos Trivia ---
         window.actualizarIntentosUI = () => {
             let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
             let remaining = Math.max(0, 2 - attempts);
@@ -569,7 +593,6 @@
             }
         };
 
-        // --- Lógica Trivia ---
         window.currentQuestion = 0; window.score = 0; window.playerName = "";
         window.selectedQuestions = []; window.questionStartTime = 0;
         
@@ -702,7 +725,6 @@
             if(window.guardarPuntajeDB) window.guardarPuntajeDB();
         };
 
-        // --- Lógica Sorteo ---
         window.sorteoTabInterval = null;
         window.iniciarSorteoTab = () => {
             if(!window.allResultsData || window.allResultsData.length === 0) {
@@ -761,7 +783,6 @@
         window.allRespuestas = [];
         window.allResultsData = [];
         
-        // Variables para el sistema de borrado universal
         let itemToDeleteId = null;
         let itemToDeleteType = null;
 
@@ -806,7 +827,6 @@
                 results.sort((a,b) => b.score - a.score);
                 window.allResultsData = results; 
                 
-                // Actualiza contador de Stream
                 const elTrivia = document.getElementById('stream-trivia-counter');
                 if (elTrivia) elTrivia.textContent = results.length;
                 
@@ -974,7 +994,6 @@
             await updateDoc(ref, { likes: increment(1) });
         };
 
-        // --- SISTEMA UNIVERSAL DE BORRADO ---
         window.eliminarPase = (id) => {
             itemToDeleteId = id;
             itemToDeleteType = 'pase';
