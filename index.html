@@ -10,6 +10,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
     
+    <!-- Librería para Gráficos de Torta (Estadísticas) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -26,12 +29,8 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-view { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Ajuste VITAL para que la barra de iOS/Android no tape los botones */
-        .pb-safe { 
-            padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); 
-        }
+        .pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
-        /* Animaciones para la transición del 8M */
         @keyframes heartbeat {
             0% { transform: scale(1); opacity: 0.9; }
             50% { transform: scale(1.08); opacity: 1; }
@@ -39,7 +38,6 @@
         }
         .animate-heartbeat { animation: heartbeat 1.2s ease-in-out infinite; }
         
-        /* Animación de línea dibujando el Corazón */
         @keyframes drawHeart {
             0% { stroke-dashoffset: 100; opacity: 0; fill: rgba(147, 51, 234, 0); }
             10% { opacity: 1; }
@@ -57,28 +55,20 @@
         .nav-shadow { box-shadow: 0 -10px 40px rgba(0,0,0,0.08); }
     </style>
 </head>
-<!-- Usamos h-[100dvh] en vez de h-screen para evitar problemas con la barra inferior del navegador -->
 <body class="h-[100dvh] w-full flex flex-col overflow-hidden selection:bg-purple-200 relative">
 
-    <!-- ========================================================================= -->
-    <!-- PANTALLA DE TRANSICIÓN ANIMADA (8M CORAZÓN Y LOGO)                        -->
-    <!-- ========================================================================= -->
+    <!-- PANTALLA DE TRANSICIÓN ANIMADA -->
     <div id="transition-overlay" class="fixed inset-0 bg-[#f8f7f4]/95 backdrop-blur-md z-[300] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
-        
         <div class="relative flex items-center justify-center">
-            <!-- Corazón que se dibuja solo (Especial 8M) -->
             <svg viewBox="0 0 24 24" class="absolute w-64 h-64 md:w-80 md:h-80 z-0 text-purple-600 drop-shadow-lg">
                 <path class="svg-heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="0.3"/>
             </svg>
-
-            <!-- Logo de El Árbol latiendo y sin fondo blanco -->
             <img src="logo-arbol.jpg" alt="Centro de Día El Árbol" class="h-32 md:h-48 w-auto object-contain mix-blend-multiply animate-heartbeat transition-transform duration-300 relative z-10" onerror="this.style.display='none'; document.getElementById('transition-text').classList.remove('hide');">
         </div>
-
         <p id="transition-text" class="mt-12 text-purple-800 font-black tracking-[0.3em] uppercase text-sm md:text-base animate-pulse hide">Cargando...</p>
     </div>
 
-    <!-- FONDO DECORATIVO PREMIUM PARA NOTEBOOKS -->
+    <!-- FONDO DECORATIVO -->
     <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#f8f7f4]">
         <div class="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-300/30 rounded-full blur-[120px]"></div>
         <div class="absolute bottom-[5%] right-[-5%] w-[600px] h-[600px] bg-emerald-300/20 rounded-full blur-[120px]"></div>
@@ -95,13 +85,12 @@
         };
     </script>
 
-    <!-- AVISO DE EMERGENCIA SI SE ABRE DESDE LOCAL -->
     <div id="local-warning" class="fixed top-0 left-0 w-full bg-rose-600 text-white p-6 text-center z-[200] shadow-2xl hide">
         <p class="font-black text-xl mb-2">⚠️ ¡Aviso Importante!</p>
-        <p class="font-medium text-sm leading-tight">Estás abriendo este archivo directamente desde tus descargas o chat. Por seguridad, los botones están bloqueados.<br><br><b>Abre tu enlace oficial en el navegador web (ej: Chrome/Safari).</b></p>
+        <p class="font-medium text-sm leading-tight">Estás abriendo este archivo directamente desde tus descargas o chat. Por seguridad, los botones están bloqueados.<br><br><b>Abre tu enlace oficial en el navegador web.</b></p>
     </div>
 
-    <!-- MODALES DE SEGURIDAD Y CONFIRMACIÓN -->
+    <!-- MODALES DE SEGURIDAD -->
     <div id="pin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center hide">
         <div class="bg-white p-8 rounded-[2rem] max-w-xs w-full text-center shadow-2xl">
             <h3 class="text-xl font-black mb-2">Acceso Staff</h3>
@@ -112,6 +101,7 @@
             </div>
         </div>
     </div>
+    
     <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center hide">
         <div class="bg-white p-8 rounded-[2rem] max-w-xs w-full text-center shadow-2xl">
             <span class="text-4xl block mb-2">🗑️</span>
@@ -123,7 +113,7 @@
         </div>
     </div>
 
-    <!-- HEADER MÓVIL Y DESKTOP CON MARCA DEL ÁRBOL -->
+    <!-- HEADER MÓVIL Y DESKTOP -->
     <header id="mobile-header" class="flex justify-between items-start md:items-center p-5 z-10 max-w-7xl mx-auto w-full relative">
         <div>
             <p class="text-[10px] md:text-xs font-bold text-stone-500 uppercase tracking-[0.2em] mb-1">Río Turbio</p>
@@ -135,13 +125,10 @@
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL (SCROLLABLE) -->
-    <!-- Incrementado pb-24 a pb-32 para asegurar espacio extra para la botonera -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 overflow-y-auto no-scrollbar pb-32 relative w-full" id="main-content">
         
-        <!-- ========================================== -->
-        <!-- VISTA 1: INICIO (EL MURO)                  -->
-        <!-- ========================================== -->
+        <!-- VISTA 1: INICIO -->
         <section id="view-inicio" class="animate-view px-5 pb-5 max-w-7xl mx-auto">
             <div class="flex items-center justify-between mb-6 md:mb-8">
                 <div>
@@ -161,9 +148,7 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 2: FORMULARIO (MENSAJE) PANORÁMICO   -->
-        <!-- ========================================== -->
+        <!-- VISTA 2: FORMULARIO -->
         <section id="view-mensaje" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-[3rem] shadow-xl border border-white mb-4 max-w-4xl mx-auto w-full">
@@ -198,12 +183,11 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 3: TRIVIA (JUEGO)                    -->
-        <!-- ========================================== -->
+        <!-- VISTA 3: TRIVIA (MODIFICADA CON ENCUESTA OBLIGATORIA) -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="max-w-3xl mx-auto w-full">
+                    
                     <div class="bg-gradient-brand p-6 md:p-10 rounded-[3rem] shadow-2xl text-white text-center mb-6 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-50"></div>
                         <span class="text-5xl md:text-6xl block mb-2 relative z-10 drop-shadow-lg">🏆</span>
@@ -211,6 +195,7 @@
                         <p class="text-purple-100 text-sm relative z-10 font-medium">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
                     </div>
 
+                    <!-- Pantalla Inicio -->
                     <div id="trivia-start" class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white text-center relative">
                         <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4 bg-purple-50 inline-block px-5 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
                         
@@ -219,6 +204,7 @@
                         <button onclick="startTrivia()" class="w-full py-4 md:py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
                     </div>
 
+                    <!-- Pantalla de Preguntas (Dinámica) -->
                     <div id="trivia-quiz" class="hide">
                         <div class="flex justify-between items-center mb-4 px-4">
                             <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase bg-purple-100 px-4 py-2 rounded-full">Pregunta 1/10</span>
@@ -227,15 +213,15 @@
                         <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[200px] flex items-center justify-center text-center">
                             <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800">¿Pregunta aquí?</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button onclick="checkAnswer(true)" class="py-5 md:py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">✅ VERDADERO</button>
-                            <button onclick="checkAnswer(false)" class="py-5 md:py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">❌ FALSO</button>
-                        </div>
+                        
+                        <!-- Aquí se inyectan los botones (V/F o de Múltiple Opción) -->
+                        <div id="dynamic-answers" class="w-full"></div>
                     </div>
 
+                    <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-8 bg-white/90 backdrop-blur-md rounded-[3rem] shadow-xl border border-white mt-6 p-8">
                         <h3 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-800">¡Finalizado! 🎉</h3>
-                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje se guardó en la base de datos.</p>
+                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje y tus respuestas fueron guardados.</p>
                         <div class="bg-stone-50 p-6 md:p-8 rounded-[2.5rem] border border-stone-100 shadow-inner inline-block px-10 md:px-16 mb-8 w-full md:w-auto">
                             <p class="text-xs md:text-sm font-bold text-stone-400 uppercase mb-2 tracking-widest">Puntaje Obtenido</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
@@ -249,15 +235,12 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 4: RANKING                           -->
-        <!-- ========================================== -->
+        <!-- VISTA 4: RANKING (TÍTULO CORREGIDO) -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-5xl mx-auto w-full">
                     <div class="text-center mb-8">
-                        <h2 class="text-4xl md:text-5xl font-brand italic mb-3 text-stone-900 leading-none">Ranking Oficial</h2>
-                        <p class="text-stone-600 text-sm md:text-lg font-medium">Las goleadoras mentales del torneo.</p>
+                        <h2 class="text-4xl md:text-5xl font-brand italic mb-3 text-stone-900 leading-none">Ranking de Trivia</h2>
                     </div>
                     
                     <div class="bg-white/90 backdrop-blur-md rounded-[3rem] shadow-2xl border border-white p-4 md:p-8 w-full">
@@ -269,9 +252,7 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 5: PANEL DE CONTROL VIP              -->
-        <!-- ========================================== -->
+        <!-- VISTA 5: PANEL DE CONTROL VIP -->
         <section id="view-panel-control" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="bg-white/95 backdrop-blur-xl p-8 md:p-12 rounded-[3rem] shadow-2xl border border-stone-100 text-center w-full max-w-2xl mx-auto">
@@ -283,22 +264,60 @@
                         <button onclick="switchTab('stream')" class="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                             <span class="text-3xl">🖥️</span> Pantalla Stream
                         </button>
+                        
+                        <button onclick="switchTab('estadisticas')" class="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
+                            <span class="text-3xl">📊</span> Estadísticas (Encuesta)
+                        </button>
 
                         <button onclick="switchTab('sorteo')" class="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                             <span class="text-3xl">🎁</span> Realizar Sorteo
                         </button>
 
                         <button onclick="switchTab('admin')" class="w-full py-5 bg-rose-600 hover:bg-rose-500 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
-                            <span class="text-3xl">🛠️</span> Moderación
+                            <span class="text-3xl">🛠️</span> Moderación de Muro
                         </button>
                     </div>
                 </div>
             </div>
         </section>
+        
+        <!-- VISTA 9: ESTADÍSTICAS (NUEVA PESTAÑA) -->
+        <section id="view-estadisticas" class="animate-view px-5 pb-5 hide">
+            <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
+                <div class="max-w-6xl mx-auto w-full">
+                    <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                        <h2 class="text-3xl md:text-4xl font-black text-blue-900 italic">Estadísticas 📊</h2>
+                        <button onclick="switchTab('panel-control')" class="bg-blue-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-blue-950 transition w-full md:w-auto">⬅️ Volver al Panel</button>
+                    </div>
+                    
+                    <div class="bg-white/90 backdrop-blur-md rounded-[3rem] shadow-2xl border border-white p-6 md:p-10 w-full">
+                        <p class="text-stone-500 mb-8 text-center font-medium">Resultados en vivo de las preguntas obligatorias de la Trivia (Salud Mental y Género).</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            <!-- PREGUNTA 1 -->
+                            <div class="bg-stone-50 p-6 rounded-3xl border border-stone-200 flex flex-col h-full">
+                                <h3 class="font-bold text-stone-800 text-sm md:text-base mb-6 h-16">P1: ¿Crees que existen deportes de "hombres" y deportes de "mujeres"?</h3>
+                                <div class="flex-1 min-h-[250px] relative">
+                                    <canvas id="chartQ1"></canvas>
+                                </div>
+                                <div id="stats-q1" class="mt-6 pt-4 border-t border-stone-200"></div>
+                            </div>
 
-        <!-- ========================================== -->
-        <!-- VISTA 6: SORTEO OFICIAL                    -->
-        <!-- ========================================== -->
+                            <!-- PREGUNTA 2 -->
+                            <div class="bg-stone-50 p-6 rounded-3xl border border-stone-200 flex flex-col h-full">
+                                <h3 class="font-bold text-stone-800 text-sm md:text-base mb-6 h-16">P2: ¿Crees que niñas y niños cuentan con la misma posibilidad de acceder al deporte?</h3>
+                                <div class="flex-1 min-h-[250px] relative">
+                                    <canvas id="chartQ2"></canvas>
+                                </div>
+                                <div id="stats-q2" class="mt-6 pt-4 border-t border-stone-200"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 6: SORTEO OFICIAL -->
         <section id="view-sorteo" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="bg-white/95 backdrop-blur-xl p-8 md:p-10 rounded-[3rem] shadow-2xl border-4 border-purple-300 text-center w-full max-w-2xl mx-auto">
@@ -323,9 +342,7 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 7: STREAM PANTALLA GIGANTE           -->
-        <!-- ========================================== -->
+        <!-- VISTA 7: STREAM PANTALLA GIGANTE -->
         <section id="view-stream" class="fixed inset-0 bg-[#faf9f6] z-[150] hide flex flex-col lg:flex-row overflow-hidden">
             <div class="lg:w-1/3 p-8 flex flex-col justify-between bg-white border-r border-stone-100 relative shrink-0 z-10 shadow-2xl overflow-y-auto">
                 <div>
@@ -345,7 +362,6 @@
                     
                     <p class="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-8 bg-stone-100 inline-block px-3 py-1 rounded">Somos Centro de Día El Árbol 🌳</p>
                     
-                    <!-- TABLERO DE TRIVIA -->
                     <div class="bg-stone-900 rounded-[3rem] p-10 text-center text-white shadow-2xl relative overflow-hidden mt-4">
                         <div class="absolute top-0 left-0 w-40 h-40 bg-emerald-500 opacity-20 blur-3xl"></div>
                         <div class="absolute bottom-0 right-0 w-32 h-32 bg-purple-500 opacity-20 blur-3xl"></div>
@@ -362,15 +378,12 @@
                 </div>
             </div>
 
-            <!-- CUADRÍCULA DE MENSAJES -->
             <div class="flex-1 p-8 overflow-y-auto no-scrollbar relative bg-stone-50/50" id="stream-feed">
                 <div id="feed-grid" class="columns-1 md:columns-2 xl:columns-3 gap-6"></div>
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- VISTA 8: MODERACIÓN AVANZADA               -->
-        <!-- ========================================== -->
+        <!-- VISTA 8: MODERACIÓN AVANZADA -->
         <section id="view-admin" class="fixed inset-0 bg-stone-100 z-[150] hide p-6 md:p-10 overflow-y-auto">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
@@ -379,10 +392,11 @@
                 </div>
 
                 <div class="flex bg-white rounded-2xl shadow-sm border border-stone-200 p-1 mb-8 max-w-sm mx-auto md:mx-0">
-                    <button onclick="switchAdminTab('mensajes')" id="admin-tab-mensajes" class="flex-1 py-3 text-sm font-bold rounded-xl bg-rose-100 text-rose-800 transition">Mensajes del Muro</button>
+                    <button onclick="switchAdminTab('mensajes')" id="admin-tab-mensajes" class="flex-1 py-3 text-sm font-bold rounded-xl bg-rose-100 text-rose-800 transition">Mensajes y Respuestas</button>
                     <button onclick="switchAdminTab('jugadores')" id="admin-tab-jugadores" class="flex-1 py-3 text-sm font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition">Jugadores de Trivia</button>
                 </div>
 
+                <!-- AHORA LOS COMENTARIOS TAMBIÉN TIENEN BOTÓN DE BORRAR -->
                 <div id="admin-mensajes-view" class="columns-1 md:columns-2 lg:columns-3 gap-6"></div>
 
                 <div id="admin-jugadores-view" class="hide">
@@ -396,8 +410,7 @@
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES VISIBLES) -->
-    <!-- Agregado .pb-safe para empujar los botones por encima de la barra de sistema de celulares -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES) -->
     <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe">
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
@@ -420,7 +433,7 @@
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Ranking</span>
             </button>
 
-            <!-- NUEVO BOTÓN STAFF -->
+            <!-- BOTÓN STAFF -->
             <button onclick="handleStaffTab()" id="tab-panel-control" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-stone-400 hover:text-stone-700 hover:bg-stone-50 transition-all">
                 <span class="text-2xl md:text-3xl leading-none">🔑</span>
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Staff</span>
@@ -434,6 +447,10 @@
         window.pendingView = null;
         window.currentActiveView = 'inicio';
         window.isStaffAuthenticated = false; 
+
+        // Variables para Gráficos
+        window.chartInstanceQ1 = null;
+        window.chartInstanceQ2 = null;
 
         window.handleStaffTab = () => {
             if (window.isStaffAuthenticated) {
@@ -476,7 +493,6 @@
             window.pendingView = null;
         };
 
-        // LÓGICA DE TRANSICIÓN ANIMADA CON EL CORAZÓN
         window.switchTab = (tabId) => {
             if (!tabId) return;
 
@@ -495,11 +511,10 @@
                 overlay.classList.remove('pointer-events-none');
                 overlay.style.opacity = '1';
                 
-                // Reiniciar animación del corazón para que se dibuje cada vez
                 const heart = document.querySelector('.svg-heart');
                 if (heart) {
                     heart.style.animation = 'none';
-                    heart.offsetHeight; // Forzar recarga visual
+                    heart.offsetHeight; 
                     heart.style.animation = null; 
                 }
 
@@ -508,7 +523,7 @@
                     setTimeout(() => {
                         overlay.style.opacity = '0';
                         setTimeout(() => { overlay.classList.add('pointer-events-none'); }, 300);
-                    }, 800); // 800ms para apreciar cómo se dibuja el corazón
+                    }, 800); 
                 }, 200);
             } else {
                 ejecutarCambioDePestana(tabId);
@@ -523,7 +538,7 @@
             const mobileHeader = document.getElementById('mobile-header');
             const mobileNav = document.getElementById('mobile-nav');
 
-            if(tabId === 'stream' || tabId === 'admin') {
+            if(tabId === 'stream' || tabId === 'admin' || tabId === 'estadisticas') {
                 if (mobileHeader) mobileHeader.classList.add('hide');
                 if (mobileNav) mobileNav.classList.add('hide');
             } else {
@@ -544,6 +559,7 @@
             window.currentActiveView = tabId;
             if(window.renderFeed) window.renderFeed();
             if(tabId === 'admin' && window.renderAdminJugadores) window.renderAdminJugadores();
+            if(tabId === 'estadisticas' && window.renderEstadisticas) window.renderEstadisticas();
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
         }
@@ -593,9 +609,31 @@
             }
         };
 
-        window.currentQuestion = 0; window.score = 0; window.playerName = "";
-        window.selectedQuestions = []; window.questionStartTime = 0;
+        // --- LÓGICA TRIVIA (NUEVO SISTEMA ENCUESTAS) ---
+        window.currentQuestion = 0; 
+        window.score = 0; 
+        window.playerName = "";
+        window.selectedQuestions = []; 
+        window.questionStartTime = 0;
+        window.surveyAnswers = {}; // Guarda respuestas de opinión
         
+        // 1. Las 2 obligatorias (No penalizan)
+        const encuestasObligatorias = [
+            {
+                id: 'q1',
+                text: '¿Crees que existen deportes de "hombres" y deportes de "mujeres"?',
+                options: ['Sí', 'No', 'Eso ya quedó en el pasado'],
+                isSurvey: true
+            },
+            {
+                id: 'q2',
+                text: '¿Crees que tanto niñas y niños cuentan con la misma posibilidad de acceder a las mismas actividades deportivas desde la temprana infancia?',
+                options: ['Depende de los padres', 'Depende de lo que quiera niño/a todos pueden elegir por igual', 'No cuentan con las mismas posibilidades'],
+                isSurvey: true
+            }
+        ];
+
+        // 2. Banco de Preguntas Aleatorias (Solo True/False)
         const allQuestions = [
             { text: "¿El fútbol femenino estuvo prohibido en países como Inglaterra y Brasil por casi 50 años?", ans: true },
             { text: "¿Marta Vieira da Silva tiene más goles en Mundiales que Pelé o Messi?", ans: true },
@@ -625,7 +663,6 @@
             { text: "¿La capitana de un equipo tiene permitido insultar al árbitro sin recibir tarjeta?", ans: false },
             { text: "¿El 'Tercer Tiempo' es obligatorio por reglamento de la FIFA en el fútbol femenino?", ans: false }, 
             { text: "¿Las mujeres se lesionan los ligamentos cruzados (LCA) con más frecuencia que los hombres por su anatomía?", ans: true },
-            
             { text: "¿Sentir nervios antes de un partido significa que no estás preparada mentalmente?", ans: false }, 
             { text: "¿La 'visualización' es imaginar jugadas con éxito y realmente mejora el rendimiento?", ans: true },
             { text: "¿Llorar después de perder una final demuestra que la jugadora es psicológicamente débil?", ans: false }, 
@@ -655,20 +692,7 @@
             { text: "¿Aceptar rápido que te equivocaste en una jugada te ayuda a concentrarte mejor en la siguiente?", ans: true },
             { text: "¿El 'descanso invisible' incluye apagar el celular una hora antes de dormir para relajar la mente?", ans: true },
             { text: "¿Enfocarte solo en el resultado (ganar o perder) genera más ansiedad que enfocarte en tu propio rendimiento?", ans: true },
-            { text: "¿La terapia psicológica está prohibida por la FIFA por considerarse ventaja deportiva desleal?", ans: false }, 
-            
-            { text: "¿Simone Biles y Naomi Osaka son atletas mundiales que pausaron su carrera para cuidar su salud mental?", ans: true },
-            { text: "¿El Festival Nosotras promueve la competencia tóxica entre las mujeres de la Cuenca?", ans: false }, 
-            { text: "¿Escuchar música en el vestuario antes de jugar aísla a la jugadora y arruina la química del equipo?", ans: false }, 
-            { text: "¿Si te enojás ciegamente con el árbitro, tu visión periférica se reduce y tomás peores decisiones?", ans: true },
-            { text: "¿Las 'Pioneras' de 1971 jugaron su mundial en el Estadio Azteca frente a 100.000 personas?", ans: true },
-            { text: "¿Decir 'no puedo más, necesito ayuda' a tu entrenadora es motivo de expulsión automática?", ans: false }, 
-            { text: "¿Un 'Pase Invisible' es apoyar emocionalmente a una compañera que no la está pasando bien?", ans: true },
-            { text: "¿La salud mental se entrena y se cuida de la misma forma que se entrena la técnica para patear un penal?", ans: true },
-            { text: "¿El Dibu Martínez fue multado económicamente por decir que hace terapia después de los partidos?", ans: false }, 
-            { text: "¿Si el equipo va perdiendo 3-0, una actitud corporal negativa (cabeza gacha, hombros caídos) empeora aún más el juego?", ans: true },
-            { text: "¿Reírse o bailar en el vestuario antes de una final desconcentra y aumenta las chances de perder el partido?", ans: false }, 
-            { text: "¿El fútbol femenino tiene un índice de abandono más alto en la adolescencia por falta de apoyo y contención?", ans: true }
+            { text: "¿La terapia psicológica está prohibida por la FIFA por considerarse ventaja deportiva desleal?", ans: false }
         ];
 
         window.startTrivia = () => {
@@ -692,25 +716,65 @@
             document.getElementById('trivia-start').classList.add('hide');
             document.getElementById('trivia-quiz').classList.remove('hide');
             
-            window.selectedQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 10); 
-            window.currentQuestion = 0; window.score = 0;
+            window.surveyAnswers = {}; // Resetear encuestas
+            const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 8); // 8 al azar
+            window.selectedQuestions = [...encuestasObligatorias, ...randomQuestions]; // 10 en total
+            
+            window.currentQuestion = 0; 
+            window.score = 0;
             window.showQuestion();
         };
 
         window.showQuestion = () => {
             if(window.currentQuestion >= window.selectedQuestions.length) { window.finishTrivia(); return; }
+            
+            const q = window.selectedQuestions[window.currentQuestion];
             document.getElementById('quiz-progress').textContent = `Pregunta ${window.currentQuestion + 1}/${window.selectedQuestions.length}`;
-            document.getElementById('question-text').textContent = window.selectedQuestions[window.currentQuestion].text;
+            document.getElementById('question-text').textContent = q.text;
+            
+            const answersContainer = document.getElementById('dynamic-answers');
+            answersContainer.innerHTML = ''; // Limpiar botones anteriores
+
+            // Renderizar botones según el tipo de pregunta
+            if (q.isSurvey) {
+                answersContainer.className = "grid grid-cols-1 gap-3 w-full";
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "py-4 md:py-5 bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-[1.5rem] font-bold md:text-lg shadow-sm active:scale-95 transition transform hover:-translate-y-1 w-full";
+                    btn.textContent = opt;
+                    btn.onclick = () => window.checkAnswer(opt);
+                    answersContainer.appendChild(btn);
+                });
+            } else {
+                answersContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4 w-full";
+                answersContainer.innerHTML = `
+                    <button onclick="checkAnswer(true)" class="py-5 md:py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">✅ VERDADERO</button>
+                    <button onclick="checkAnswer(false)" class="py-5 md:py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">❌ FALSO</button>
+                `;
+            }
+
             window.questionStartTime = Date.now(); 
         };
 
         window.checkAnswer = (userAns) => {
             const timeTaken = Date.now() - window.questionStartTime;
-            if(userAns === window.selectedQuestions[window.currentQuestion].ans) {
-                let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
-                window.score += (100 + speedBonus);
+            const q = window.selectedQuestions[window.currentQuestion];
+            
+            if (q.isSurvey) {
+                // Guarda la opinión
+                window.surveyAnswers[q.id] = userAns;
+                // Bono de participación en la encuesta
+                window.score += 100; 
                 document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+            } else {
+                // Pregunta normal True/False
+                if(userAns === q.ans) {
+                    let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
+                    window.score += (100 + speedBonus);
+                    document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+                }
             }
+            
             window.currentQuestion++; window.showQuestion();
         };
 
@@ -725,6 +789,7 @@
             if(window.guardarPuntajeDB) window.guardarPuntajeDB();
         };
 
+        // --- Lógica Sorteo ---
         window.sorteoTabInterval = null;
         window.iniciarSorteoTab = () => {
             if(!window.allResultsData || window.allResultsData.length === 0) {
@@ -782,9 +847,10 @@
         window.allPases = [];
         window.allRespuestas = [];
         window.allResultsData = [];
+        window.allEncuestasData = []; // Guardo las estadísticas acá
         
         let itemToDeleteId = null;
-        let itemToDeleteType = null;
+        let itemToDeleteType = null; // 'pase', 'jugador' o 'respuesta'
 
         const startDB = async () => {
             try {
@@ -810,7 +876,7 @@
                 snap.forEach(doc => window.allPases.push({id: doc.id, ...doc.data()}));
                 window.allPases.sort((a,b) => b.timestamp - a.timestamp);
                 if(window.renderFeed) window.renderFeed();
-            }, (err) => { console.error("Error cargando pases:", err); });
+            }, (err) => { console.error("Error pases:", err); });
 
             const respuestasRef = collection(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo');
             onSnapshot(respuestasRef, (snap) => {
@@ -818,7 +884,7 @@
                 snap.forEach(doc => window.allRespuestas.push({id: doc.id, ...doc.data()}));
                 window.allRespuestas.sort((a,b) => a.timestamp - b.timestamp);
                 if(window.renderFeed) window.renderFeed();
-            }, (err) => { console.error("Error cargando respuestas:", err); });
+            }, (err) => { console.error("Error respuestas:", err); });
 
             const triviaRef = collection(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados');
             onSnapshot(triviaRef, (snap) => {
@@ -833,7 +899,17 @@
                 if(window.updateStreamTopPlayer) window.updateStreamTopPlayer();
                 if(window.renderLeaderboard) window.renderLeaderboard(results);
                 if(window.renderAdminJugadores && window.currentActiveView === 'admin') window.renderAdminJugadores();
-            }, (err) => { console.error("Error cargando trivia:", err); });
+            }, (err) => { console.error("Error trivia:", err); });
+
+            // Lectura de Encuestas
+            const encuestaRef = collection(db, 'artifacts', appId, 'public', 'data', 'encuesta_resultados');
+            onSnapshot(encuestaRef, (snap) => {
+                window.allEncuestasData = [];
+                snap.forEach(doc => window.allEncuestasData.push(doc.data()));
+                if(window.renderEstadisticas && window.currentActiveView === 'estadisticas') {
+                    window.renderEstadisticas();
+                }
+            }, (err) => { console.error("Error encuestas:", err); });
         }
 
         window.updateStreamTopPlayer = () => {
@@ -855,6 +931,18 @@
         window.guardarPuntajeDB = async () => {
             if(!currentUser) return;
 
+            // Guardar Encuesta 
+            if (Object.keys(window.surveyAnswers).length > 0) {
+                const encuestaRef = doc(db, 'artifacts', appId, 'public', 'data', 'encuesta_resultados', currentUser.uid);
+                await setDoc(encuestaRef, {
+                    q1: window.surveyAnswers['q1'] || '',
+                    q2: window.surveyAnswers['q2'] || '',
+                    timestamp: Date.now(),
+                    userId: currentUser.uid
+                });
+            }
+
+            // Guardar Puntaje (Revisando intentos)
             const puntajeExistente = window.allResultsData.find(r => r.userId === currentUser.uid);
             if (puntajeExistente && puntajeExistente.score >= window.score) {
                 return;
@@ -866,6 +954,73 @@
                 score: window.score, 
                 timestamp: Date.now(),
                 userId: currentUser.uid
+            });
+        };
+
+        // --- SISTEMA DE ESTADÍSTICAS ---
+        window.renderEstadisticas = () => {
+            if (!window.allEncuestasData) return;
+            let total = window.allEncuestasData.length;
+            
+            let q1Data = { 'Sí': 0, 'No': 0, 'Eso ya quedó en el pasado': 0 };
+            let q2Data = { 
+                'Depende de los padres': 0, 
+                'Depende de lo que quiera niño/a todos pueden elegir por igual': 0, 
+                'No cuentan con las mismas posibilidades': 0 
+            };
+
+            window.allEncuestasData.forEach(ans => {
+                if (ans.q1 && q1Data[ans.q1] !== undefined) q1Data[ans.q1]++;
+                if (ans.q2 && q2Data[ans.q2] !== undefined) q2Data[ans.q2]++;
+            });
+
+            function buildHtml(dataObj) {
+                let html = `<p class="font-black text-center mb-4 text-purple-700 bg-purple-50 py-2 rounded-xl">Total de personas encuestadas: ${total}</p>`;
+                for (const [key, value] of Object.entries(dataObj)) {
+                    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+                    html += `<div class="flex justify-between text-xs md:text-sm mb-2 border-b border-stone-100 pb-2 items-center gap-2">
+                                <span class="truncate w-2/3 pr-2 text-stone-600 font-bold">${key}</span>
+                                <span class="font-black text-stone-900 shrink-0 bg-stone-100 px-3 py-1 rounded-lg">${value} pers. (${pct}%)</span>
+                             </div>`;
+                }
+                return html;
+            }
+
+            document.getElementById('stats-q1').innerHTML = buildHtml(q1Data);
+            document.getElementById('stats-q2').innerHTML = buildHtml(q2Data);
+
+            const ctx1 = document.getElementById('chartQ1').getContext('2d');
+            const ctx2 = document.getElementById('chartQ2').getContext('2d');
+
+            if(window.chartInstanceQ1) window.chartInstanceQ1.destroy();
+            if(window.chartInstanceQ2) window.chartInstanceQ2.destroy();
+
+            // Gráfico 1
+            window.chartInstanceQ1 = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(q1Data),
+                    datasets: [{ 
+                        data: Object.values(q1Data), 
+                        backgroundColor: ['#c084fc', '#34d399', '#fb7185'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Gráfico 2
+            window.chartInstanceQ2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(q2Data),
+                    datasets: [{ 
+                        data: Object.values(q2Data), 
+                        backgroundColor: ['#fbbf24', '#60a5fa', '#f472b6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         };
 
@@ -947,13 +1102,18 @@
                         <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1.5 bg-rose-50 px-4 py-2 rounded-full text-rose-600 border border-rose-100 hover:scale-105 active:scale-95 transition">
                             <span class="text-base md:text-lg">❤️</span><span class="text-sm font-black tabular-nums">${likes}</span>
                         </button>
-                        ${modo === 'admin' ? `<button onclick="eliminarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-rose-500 px-4 py-2 rounded-lg hover:bg-rose-600 shadow-sm">Borrar</button>` : ''}
+                        ${modo === 'admin' ? `<button onclick="eliminarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-rose-500 px-4 py-2 rounded-lg hover:bg-rose-600 shadow-sm">Borrar Foto/Msj</button>` : ''}
                     </div>
 
                     ${respuestas.length > 0 || modo === 'inicio' ? `
                     <div class="mt-5 pt-5 border-t border-stone-100">
-                        <div class="max-h-40 overflow-y-auto no-scrollbar space-y-2.5 mb-4">
-                            ${respuestas.map(r => `<div class="bg-stone-50 p-3 rounded-xl text-xs md:text-sm text-stone-600 italic break-words border border-stone-100"><span class="font-bold text-purple-700 not-italic mr-1">💬</span> ${r.texto}</div>`).join('')}
+                        <div class="max-h-40 overflow-y-auto no-scrollbar space-y-2.5 mb-4 pr-1">
+                            ${respuestas.map(r => `
+                                <div class="bg-stone-50 p-3 rounded-xl text-xs md:text-sm text-stone-600 italic break-words border border-stone-100 relative group">
+                                    <span class="font-bold text-purple-700 not-italic mr-1">💬</span> ${r.texto}
+                                    ${modo === 'admin' ? `<button onclick="eliminarRespuesta('${r.id}')" class="absolute right-2 top-2 text-[10px] bg-rose-500 text-white px-2 py-1 rounded shadow hover:bg-rose-600">X</button>` : ''}
+                                </div>
+                            `).join('')}
                         </div>
                         ${modo === 'inicio' ? `
                         <div class="flex gap-2">
@@ -994,29 +1154,29 @@
             await updateDoc(ref, { likes: increment(1) });
         };
 
+        // --- SISTEMA UNIVERSAL DE BORRADO ---
         window.eliminarPase = (id) => {
-            itemToDeleteId = id;
-            itemToDeleteType = 'pase';
-            const modalTitle = document.getElementById('modal-title');
-            if (modalTitle) modalTitle.textContent = '¿Borrar mensaje?';
-            const modal = document.getElementById('confirm-modal');
-            if (modal) modal.classList.remove('hide');
+            itemToDeleteId = id; itemToDeleteType = 'pase';
+            document.getElementById('modal-title').textContent = '¿Borrar mensaje y foto?';
+            document.getElementById('confirm-modal').classList.remove('hide');
         };
 
         window.eliminarJugador = (id) => {
-            itemToDeleteId = id;
-            itemToDeleteType = 'jugador';
-            const modalTitle = document.getElementById('modal-title');
-            if (modalTitle) modalTitle.textContent = '¿Borrar jugador de Trivia?';
-            const modal = document.getElementById('confirm-modal');
-            if (modal) modal.classList.remove('hide');
+            itemToDeleteId = id; itemToDeleteType = 'jugador';
+            document.getElementById('modal-title').textContent = '¿Borrar jugador de Trivia?';
+            document.getElementById('confirm-modal').classList.remove('hide');
+        };
+
+        window.eliminarRespuesta = (id) => {
+            itemToDeleteId = id; itemToDeleteType = 'respuesta';
+            document.getElementById('modal-title').textContent = '¿Borrar este comentario?';
+            document.getElementById('confirm-modal').classList.remove('hide');
         };
 
         window.closeConfirmModal = () => { 
             const modal = document.getElementById('confirm-modal');
             if (modal) modal.classList.add('hide'); 
-            itemToDeleteId = null; 
-            itemToDeleteType = null;
+            itemToDeleteId = null; itemToDeleteType = null;
         };
 
         document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
@@ -1028,6 +1188,8 @@
                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo', itemToDeleteId));
                     } else if (itemToDeleteType === 'jugador') {
                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'trivia_resultados', itemToDeleteId));
+                    } else if (itemToDeleteType === 'respuesta') {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo', itemToDeleteId));
                     }
                 } catch (err) { console.error(err); } finally {
                     window.closeConfirmModal(); 
