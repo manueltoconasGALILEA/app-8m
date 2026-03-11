@@ -57,6 +57,11 @@
 </head>
 <body class="h-[100dvh] w-full flex flex-col overflow-hidden selection:bg-purple-200 relative">
 
+    <!-- TOAST DE ERROR (Filtro de Palabras y Alertas) -->
+    <div id="toast-error" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-rose-600 text-white px-6 py-3 rounded-2xl shadow-2xl z-[400] font-bold text-center transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] max-w-[90%] w-max text-sm md:text-base">
+        Mensaje de error
+    </div>
+
     <!-- PANTALLA DE TRANSICIÓN ANIMADA -->
     <div id="transition-overlay" class="fixed inset-0 bg-[#f8f7f4]/95 backdrop-blur-md z-[300] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
         <div class="relative flex items-center justify-center">
@@ -200,7 +205,6 @@
                         <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4 bg-purple-50 inline-block px-5 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
                         
                         <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 mb-5 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
-                        <p id="name-error" class="text-rose-500 font-bold text-sm hide mb-4">¡Ingresá tu nombre para jugar!</p>
                         <button onclick="startTrivia()" class="w-full py-4 md:py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
                     </div>
 
@@ -391,13 +395,15 @@
                     <button onclick="switchTab('panel-control')" class="bg-rose-900 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-rose-950 transition w-full md:w-auto">⬅️ Volver al Panel</button>
                 </div>
 
-                <div class="flex bg-white rounded-2xl shadow-sm border border-stone-200 p-1 mb-8 max-w-sm mx-auto md:mx-0">
-                    <button onclick="switchAdminTab('mensajes')" id="admin-tab-mensajes" class="flex-1 py-3 text-sm font-bold rounded-xl bg-rose-100 text-rose-800 transition">Mensajes y Respuestas</button>
-                    <button onclick="switchAdminTab('jugadores')" id="admin-tab-jugadores" class="flex-1 py-3 text-sm font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition">Jugadores de Trivia</button>
+                <div class="flex bg-white rounded-2xl shadow-sm border border-stone-200 p-1 mb-8 max-w-2xl mx-auto md:mx-0 flex-wrap">
+                    <button onclick="switchAdminTab('mensajes')" id="admin-tab-mensajes" class="flex-1 py-3 text-sm md:text-xs font-bold rounded-xl bg-rose-100 text-rose-800 transition">Mensajes Activos</button>
+                    <!-- TERCERA PESTAÑA AÑADIDA PARA APROBACIÓN DE FOTOS -->
+                    <button onclick="switchAdminTab('aprobacion')" id="admin-tab-aprobacion" class="flex-1 py-3 text-sm md:text-xs font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition relative">Fotos a Aprobar <span id="badge-fotos" class="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-1 hide">0</span></button>
+                    <button onclick="switchAdminTab('jugadores')" id="admin-tab-jugadores" class="flex-1 py-3 text-sm md:text-xs font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition">Jugadores de Trivia</button>
                 </div>
 
-                <!-- AHORA LOS COMENTARIOS TAMBIÉN TIENEN BOTÓN DE BORRAR -->
                 <div id="admin-mensajes-view" class="columns-1 md:columns-2 lg:columns-3 gap-6"></div>
+                <div id="admin-aprobacion-view" class="hide columns-1 md:columns-2 lg:columns-3 gap-6"></div>
 
                 <div id="admin-jugadores-view" class="hide">
                     <div class="bg-white rounded-[2rem] shadow-md border border-stone-200 p-4 md:p-8">
@@ -433,7 +439,6 @@
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Ranking</span>
             </button>
 
-            <!-- BOTÓN STAFF -->
             <button onclick="handleStaffTab()" id="tab-panel-control" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-stone-400 hover:text-stone-700 hover:bg-stone-50 transition-all">
                 <span class="text-2xl md:text-3xl leading-none">🔑</span>
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Staff</span>
@@ -448,9 +453,56 @@
         window.currentActiveView = 'inicio';
         window.isStaffAuthenticated = false; 
 
-        // Variables para Gráficos
         window.chartInstanceQ1 = null;
         window.chartInstanceQ2 = null;
+
+        // --- PROFANITY FILTER (FILTRO DE LENGUAJE INAPROPIADO) ---
+        window.showToastError = (msg) => {
+            const toast = document.getElementById('toast-error');
+            if(toast) {
+                toast.textContent = msg;
+                toast.classList.remove('pointer-events-none', 'translate-y-[-20px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('pointer-events-none', 'translate-y-[-20px]', 'opacity-0');
+                }, 4000);
+            }
+        };
+
+        window.hasProfanity = (text) => {
+            if(!text) return false;
+            const normalized = text.toLowerCase();
+            const noSpaces = normalized.replace(/[^a-zñ]/g, ""); 
+            
+            // Diccionario de bloqueo de palabras o frases ofensivas solicitadas por el usuario y similares
+            const wordsToCheck = [
+                "puta", "trolo", "trola", "elber galarga", "pija", "garcha", "michotitogordocabezon", 
+                "puto", "concha", "mierda", "pelotudo", "boludo", "mogolico", "tarado", "forro", "choto", "cajeta"
+            ];
+            
+            for (let word of wordsToCheck) {
+                // Chequeo de palabra exacta
+                const regex = new RegExp(`\\b${word}\\b`, 'i');
+                if (regex.test(normalized)) return true;
+                
+                // Chequeo especial para las frases/bromas largas sin espacios (ej: elbergalarga)
+                const wordJoined = word.replace(/\s+/g, "");
+                if (wordJoined.length > 5 && noSpaces.includes(wordJoined)) return true;
+                
+                // Chequeo forzado para palabras puntuales que nunca deberían pasar aunque estén unidas a otras letras
+                if (["elber galarga", "michotitogordocabezon", "garcha", "pija"].some(w => normalized.includes(w) || noSpaces.includes(w.replace(/\s+/g, "")))) return true;
+            }
+            return false;
+        };
+
+        window.checkText = (text) => {
+            if(window.hasProfanity(text)) {
+                window.showToastError("Por favor, usa un lenguaje respetuoso y adecuado para la comunidad.");
+                return false;
+            }
+            return true;
+        };
 
         window.handleStaffTab = () => {
             if (window.isStaffAuthenticated) {
@@ -558,7 +610,10 @@
             
             window.currentActiveView = tabId;
             if(window.renderFeed) window.renderFeed();
-            if(tabId === 'admin' && window.renderAdminJugadores) window.renderAdminJugadores();
+            if(tabId === 'admin') {
+                if(window.renderAdminJugadores) window.renderAdminJugadores();
+                window.switchAdminTab('mensajes'); // Siempre abrir en mensajes por defecto
+            }
             if(tabId === 'estadisticas' && window.renderEstadisticas) window.renderEstadisticas();
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
@@ -566,22 +621,27 @@
 
         window.switchAdminTab = (tab) => {
             const btnMsj = document.getElementById('admin-tab-mensajes');
+            const btnAprob = document.getElementById('admin-tab-aprobacion');
             const btnJug = document.getElementById('admin-tab-jugadores');
+            
             const viewMsj = document.getElementById('admin-mensajes-view');
+            const viewAprob = document.getElementById('admin-aprobacion-view');
             const viewJug = document.getElementById('admin-jugadores-view');
 
-            if (!btnMsj || !btnJug || !viewMsj || !viewJug) return;
+            if (!btnMsj || !btnJug || !viewMsj || !viewJug || !btnAprob || !viewAprob) return;
+
+            [btnMsj, btnAprob, btnJug].forEach(b => b.className = "flex-1 py-3 text-sm md:text-xs font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition");
+            [viewMsj, viewAprob, viewJug].forEach(v => v.classList.add('hide'));
 
             if(tab === 'mensajes') {
-                btnMsj.className = "flex-1 py-3 text-sm font-bold rounded-xl bg-rose-100 text-rose-800 transition";
-                btnJug.className = "flex-1 py-3 text-sm font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition";
+                btnMsj.className = "flex-1 py-3 text-sm md:text-xs font-bold rounded-xl bg-rose-100 text-rose-800 transition";
                 viewMsj.classList.remove('hide');
-                viewJug.classList.add('hide');
-            } else {
-                btnJug.className = "flex-1 py-3 text-sm font-bold rounded-xl bg-rose-100 text-rose-800 transition";
-                btnMsj.className = "flex-1 py-3 text-sm font-bold rounded-xl text-stone-500 hover:bg-stone-50 transition";
+            } else if (tab === 'aprobacion') {
+                btnAprob.className = "flex-1 py-3 text-sm md:text-xs font-bold rounded-xl bg-rose-100 text-rose-800 transition";
+                viewAprob.classList.remove('hide');
+            } else if (tab === 'jugadores') {
+                btnJug.className = "flex-1 py-3 text-sm md:text-xs font-bold rounded-xl bg-rose-100 text-rose-800 transition";
                 viewJug.classList.remove('hide');
-                viewMsj.classList.add('hide');
             }
         };
 
@@ -609,15 +669,13 @@
             }
         };
 
-        // --- LÓGICA TRIVIA (NUEVO SISTEMA ENCUESTAS) ---
         window.currentQuestion = 0; 
         window.score = 0; 
         window.playerName = "";
         window.selectedQuestions = []; 
         window.questionStartTime = 0;
-        window.surveyAnswers = {}; // Guarda respuestas de opinión
+        window.surveyAnswers = {}; 
         
-        // 1. Las 2 obligatorias (No penalizan)
         const encuestasObligatorias = [
             {
                 id: 'q1',
@@ -633,7 +691,6 @@
             }
         ];
 
-        // 2. Banco de Preguntas Aleatorias (Solo True/False)
         const allQuestions = [
             { text: "¿El fútbol femenino estuvo prohibido en países como Inglaterra y Brasil por casi 50 años?", ans: true },
             { text: "¿Marta Vieira da Silva tiene más goles en Mundiales que Pelé o Messi?", ans: true },
@@ -698,27 +755,25 @@
         window.startTrivia = () => {
             let attempts = parseInt(localStorage.getItem('triviaAttempts') || '0');
             if (attempts >= 2) {
-                const err = document.getElementById('name-error');
-                err.textContent = "¡Ya utilizaste tus 2 intentos permitidos!";
-                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 4000); 
+                window.showToastError("¡Ya utilizaste tus 2 intentos permitidos!");
                 return;
             }
 
             const nameInput = document.getElementById('player-name');
             if(!nameInput.value.trim()) {
-                const err = document.getElementById('name-error');
-                err.textContent = "¡Ingresá tu nombre para jugar!";
-                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); 
+                window.showToastError("¡Ingresá tu nombre para jugar!");
                 return;
             }
+
+            if(!window.checkText(nameInput.value.trim())) return; // Validación de malas palabras
             
             window.playerName = nameInput.value.trim();
             document.getElementById('trivia-start').classList.add('hide');
             document.getElementById('trivia-quiz').classList.remove('hide');
             
-            window.surveyAnswers = {}; // Resetear encuestas
-            const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 8); // 8 al azar
-            window.selectedQuestions = [...encuestasObligatorias, ...randomQuestions]; // 10 en total
+            window.surveyAnswers = {}; 
+            const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 8); 
+            window.selectedQuestions = [...encuestasObligatorias, ...randomQuestions]; 
             
             window.currentQuestion = 0; 
             window.score = 0;
@@ -733,9 +788,8 @@
             document.getElementById('question-text').textContent = q.text;
             
             const answersContainer = document.getElementById('dynamic-answers');
-            answersContainer.innerHTML = ''; // Limpiar botones anteriores
+            answersContainer.innerHTML = ''; 
 
-            // Renderizar botones según el tipo de pregunta
             if (q.isSurvey) {
                 answersContainer.className = "grid grid-cols-1 gap-3 w-full";
                 q.options.forEach(opt => {
@@ -761,13 +815,10 @@
             const q = window.selectedQuestions[window.currentQuestion];
             
             if (q.isSurvey) {
-                // Guarda la opinión
                 window.surveyAnswers[q.id] = userAns;
-                // Bono de participación en la encuesta
                 window.score += 100; 
                 document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
             } else {
-                // Pregunta normal True/False
                 if(userAns === q.ans) {
                     let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
                     window.score += (100 + speedBonus);
@@ -789,7 +840,6 @@
             if(window.guardarPuntajeDB) window.guardarPuntajeDB();
         };
 
-        // --- Lógica Sorteo ---
         window.sorteoTabInterval = null;
         window.iniciarSorteoTab = () => {
             if(!window.allResultsData || window.allResultsData.length === 0) {
@@ -847,10 +897,10 @@
         window.allPases = [];
         window.allRespuestas = [];
         window.allResultsData = [];
-        window.allEncuestasData = []; // Guardo las estadísticas acá
+        window.allEncuestasData = []; 
         
         let itemToDeleteId = null;
-        let itemToDeleteType = null; // 'pase', 'jugador' o 'respuesta'
+        let itemToDeleteType = null; 
 
         const startDB = async () => {
             try {
@@ -901,7 +951,6 @@
                 if(window.renderAdminJugadores && window.currentActiveView === 'admin') window.renderAdminJugadores();
             }, (err) => { console.error("Error trivia:", err); });
 
-            // Lectura de Encuestas
             const encuestaRef = collection(db, 'artifacts', appId, 'public', 'data', 'encuesta_resultados');
             onSnapshot(encuestaRef, (snap) => {
                 window.allEncuestasData = [];
@@ -931,7 +980,6 @@
         window.guardarPuntajeDB = async () => {
             if(!currentUser) return;
 
-            // Guardar Encuesta 
             if (Object.keys(window.surveyAnswers).length > 0) {
                 const encuestaRef = doc(db, 'artifacts', appId, 'public', 'data', 'encuesta_resultados', currentUser.uid);
                 await setDoc(encuestaRef, {
@@ -942,7 +990,6 @@
                 });
             }
 
-            // Guardar Puntaje (Revisando intentos)
             const puntajeExistente = window.allResultsData.find(r => r.userId === currentUser.uid);
             if (puntajeExistente && puntajeExistente.score >= window.score) {
                 return;
@@ -957,7 +1004,6 @@
             });
         };
 
-        // --- SISTEMA DE ESTADÍSTICAS ---
         window.renderEstadisticas = () => {
             if (!window.allEncuestasData) return;
             let total = window.allEncuestasData.length;
@@ -995,7 +1041,6 @@
             if(window.chartInstanceQ1) window.chartInstanceQ1.destroy();
             if(window.chartInstanceQ2) window.chartInstanceQ2.destroy();
 
-            // Gráfico 1
             window.chartInstanceQ1 = new Chart(ctx1, {
                 type: 'doughnut',
                 data: {
@@ -1009,7 +1054,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Gráfico 2
             window.chartInstanceQ2 = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
@@ -1068,16 +1112,36 @@
         };
 
         window.renderFeed = () => {
-            const grids = {
-                stream: document.getElementById('feed-grid'),
-                inicio: document.getElementById('participant-feed-content'),
-                admin: document.getElementById('admin-mensajes-view')
-            };
-            Object.values(grids).forEach(g => { if(g) g.innerHTML = ''; });
-            
-            window.allPases.slice(0, 40).forEach(p => {
-                if(grids[window.currentActiveView]) grids[window.currentActiveView].appendChild(crearCard(p, window.currentActiveView));
-            });
+            const gridStream = document.getElementById('feed-grid');
+            const gridInicio = document.getElementById('participant-feed-content');
+            const gridAdminMsj = document.getElementById('admin-mensajes-view');
+            const gridAdminAprob = document.getElementById('admin-aprobacion-view');
+
+            if(gridStream) gridStream.innerHTML = '';
+            if(gridInicio) gridInicio.innerHTML = '';
+            if(gridAdminMsj) gridAdminMsj.innerHTML = '';
+            if(gridAdminAprob) gridAdminAprob.innerHTML = '';
+
+            // Separamos aprobados y pendientes
+            const pasesAprobados = window.allPases.filter(p => p.approved !== false);
+            const pasesPendientes = window.allPases.filter(p => p.approved === false);
+
+            // Actualizar burbuja roja de fotos a aprobar
+            const badge = document.getElementById('badge-fotos');
+            if(badge) {
+                badge.textContent = pasesPendientes.length;
+                pasesPendientes.length > 0 ? badge.classList.remove('hide') : badge.classList.add('hide');
+            }
+
+            // Rendereamos según la vista actual para optimizar
+            if (window.currentActiveView === 'stream') {
+                pasesAprobados.slice(0, 40).forEach(p => gridStream.appendChild(crearCard(p, 'stream')));
+            } else if (window.currentActiveView === 'inicio') {
+                pasesAprobados.slice(0, 40).forEach(p => gridInicio.appendChild(crearCard(p, 'inicio')));
+            } else if (window.currentActiveView === 'admin') {
+                pasesAprobados.slice(0, 40).forEach(p => gridAdminMsj.appendChild(crearCard(p, 'admin')));
+                pasesPendientes.forEach(p => gridAdminAprob.appendChild(crearCard(p, 'aprobacion')));
+            }
         };
 
         function crearCard(p, modo) {
@@ -1087,6 +1151,18 @@
             const media = p.imagen ? `<img src="${p.imagen}" class="w-full h-48 md:h-64 object-cover border-b border-stone-50">` : `<div class="w-full h-8 bg-gradient-brand opacity-20"></div>`;
             const likes = p.likes || 0;
             const respuestas = window.allRespuestas ? window.allRespuestas.filter(r => r.parentId === p.id) : [];
+
+            let adminButtons = '';
+            if (modo === 'admin') {
+                adminButtons = `<button onclick="eliminarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-rose-500 px-4 py-2 rounded-lg hover:bg-rose-600 shadow-sm">Borrar Foto/Msj</button>`;
+            } else if (modo === 'aprobacion') {
+                adminButtons = `
+                    <div class="flex gap-2">
+                        <button onclick="aprobarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-emerald-500 px-4 py-2 rounded-lg hover:bg-emerald-600 shadow-sm">✅ Aprobar</button>
+                        <button onclick="eliminarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-rose-500 px-4 py-2 rounded-lg hover:bg-rose-600 shadow-sm">❌ Rechazar</button>
+                    </div>
+                `;
+            }
 
             card.innerHTML = `
                 ${media}
@@ -1099,13 +1175,15 @@
                     ${p.mensaje ? `<p class="text-stone-600 text-sm md:text-base italic font-medium leading-relaxed mb-4">"${p.mensaje}"</p>` : ''}
                     
                     <div class="flex items-center justify-between mt-2">
-                        <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1.5 bg-rose-50 px-4 py-2 rounded-full text-rose-600 border border-rose-100 hover:scale-105 active:scale-95 transition">
-                            <span class="text-base md:text-lg">❤️</span><span class="text-sm font-black tabular-nums">${likes}</span>
-                        </button>
-                        ${modo === 'admin' ? `<button onclick="eliminarPase('${p.id}')" class="text-[10px] md:text-xs font-bold text-white bg-rose-500 px-4 py-2 rounded-lg hover:bg-rose-600 shadow-sm">Borrar Foto/Msj</button>` : ''}
+                        ${modo !== 'aprobacion' ? `
+                            <button onclick="reaccionar('${p.id}')" class="flex items-center gap-1.5 bg-rose-50 px-4 py-2 rounded-full text-rose-600 border border-rose-100 hover:scale-105 active:scale-95 transition">
+                                <span class="text-base md:text-lg">❤️</span><span class="text-sm font-black tabular-nums">${likes}</span>
+                            </button>
+                        ` : '<div></div>'}
+                        ${adminButtons}
                     </div>
 
-                    ${respuestas.length > 0 || modo === 'inicio' ? `
+                    ${(modo !== 'aprobacion' && (respuestas.length > 0 || modo === 'inicio' || modo === 'admin')) ? `
                     <div class="mt-5 pt-5 border-t border-stone-100">
                         <div class="max-h-40 overflow-y-auto no-scrollbar space-y-2.5 mb-4 pr-1">
                             ${respuestas.map(r => `
@@ -1135,6 +1213,8 @@
             const text = input.value.trim();
             if(!text) return;
             
+            if(!window.checkText(text)) return; // Validar lenguaje
+
             input.disabled = true;
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'respuestas_en_vivo'), {
@@ -1152,6 +1232,20 @@
             if(!currentUser) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo', paseId);
             await updateDoc(ref, { likes: increment(1) });
+        };
+
+        // --- SISTEMA DE APROBACIÓN DE FOTOS ---
+        window.aprobarPase = async (id) => {
+            if(!currentUser) return;
+            try {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo', id);
+                await updateDoc(ref, { approved: true });
+                window.showToastError("✅ Foto aprobada para ser publicada");
+                document.getElementById('toast-error').classList.replace('bg-rose-600', 'bg-emerald-600');
+                setTimeout(() => document.getElementById('toast-error').classList.replace('bg-emerald-600', 'bg-rose-600'), 4000);
+            } catch(e) {
+                console.error("Error al aprobar:", e);
+            }
         };
 
         // --- SISTEMA UNIVERSAL DE BORRADO ---
@@ -1229,26 +1323,48 @@
         document.getElementById('pase-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUser) return;
+
+            const senderVal = document.getElementById('sender').value.trim();
+            const recVal = document.getElementById('receiver').value.trim();
+            const msgVal = document.getElementById('texto-mensaje').value.trim();
+
+            if(!window.checkText(senderVal) || !window.checkText(recVal) || !window.checkText(msgVal)) {
+                return; // Frena si hay malas palabras
+            }
+
             const btn = document.getElementById('submit-btn');
             if (btn) { btn.disabled = true; btn.textContent = "SUBIENDO..."; }
+            
+            // Lógica de Aprobación: Si hay foto, va a espera. Si es solo texto, va directo al muro.
+            const isApproved = currentImgBase64 ? false : true;
+
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo'), {
-                    sender: document.getElementById('sender').value.trim() || 'Anónimo',
-                    receiver: document.getElementById('receiver').value.trim() || 'Alguien',
-                    mensaje: document.getElementById('texto-mensaje').value.trim(),
+                    sender: senderVal || 'Anónimo',
+                    receiver: recVal || 'Alguien',
+                    mensaje: msgVal,
                     imagen: currentImgBase64,
                     likes: 0,
+                    approved: isApproved,
                     timestamp: Date.now(),
                     userId: currentUser.uid
                 });
+                
                 if (btn) btn.textContent = "¡HECHO! ✨";
+                
+                if(!isApproved) {
+                    window.showToastError("Tu foto fue enviada. ¡En breve la aprobaremos para que salga en el muro!");
+                    document.getElementById('toast-error').classList.replace('bg-rose-600', 'bg-blue-600');
+                    setTimeout(() => document.getElementById('toast-error').classList.replace('bg-blue-600', 'bg-rose-600'), 4000);
+                }
+
                 setTimeout(() => {
                     e.target.reset(); currentImgBase64 = null;
                     if (previewImg) previewImg.classList.add('hide');
                     if (placeholderUi) placeholderUi.classList.remove('hide');
                     if (btn) { btn.disabled = false; btn.textContent = "ENVIAR MENSAJE 💜"; }
                     window.switchTab('inicio'); 
-                }, 1500);
+                }, 2000);
             } catch (err) { 
                 console.error("Error subiendo el pase:", err);
                 if (btn) { btn.disabled = false; btn.textContent = "ERROR ❌"; }
