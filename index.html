@@ -471,7 +471,7 @@
     </main>
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-    <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe hide">
+    <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe">
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
                 <span class="text-2xl md:text-3xl leading-none">🏟️</span>
@@ -709,7 +709,9 @@
             
             window.currentActiveView = tabId;
             if(window.renderFeed) window.renderFeed();
-            if(tabId === 'admin' && window.renderAdminPanel) window.renderAdminPanel();
+            if(tabId === 'admin') {
+                if(window.renderAdminPanel) window.renderAdminPanel();
+            }
             if(tabId === 'estadisticas' && window.renderEstadisticas) window.renderEstadisticas();
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
@@ -1070,7 +1072,7 @@
                 score: window.score, 
                 timestamp: Date.now(),
                 userId: currentUser.uid,
-                approved: false // REQUIERE APROBACION MANUAL
+                approved: false 
             });
 
             window.showToastError("¡Enviado a revisión! En breve aparecerás en el ranking.");
