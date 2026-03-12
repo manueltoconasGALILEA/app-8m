@@ -188,7 +188,7 @@
             </div>
         </section>
 
-        <!-- VISTA 3: TRIVIA (MODIFICADA CON ENCUESTA OBLIGATORIA) -->
+        <!-- VISTA 3: TRIVIA (CON ENCUESTA OBLIGATORIA) -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="max-w-3xl mx-auto w-full">
@@ -239,7 +239,7 @@
             </div>
         </section>
 
-        <!-- VISTA 4: RANKING (TÍTULO CORREGIDO) -->
+        <!-- VISTA 4: RANKING -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-5xl mx-auto w-full">
@@ -285,7 +285,7 @@
             </div>
         </section>
         
-        <!-- VISTA 9: ESTADÍSTICAS (NUEVA PESTAÑA) -->
+        <!-- VISTA 9: ESTADÍSTICAS -->
         <section id="view-estadisticas" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-6xl mx-auto w-full">
@@ -298,7 +298,6 @@
                         <p class="text-stone-500 mb-8 text-center font-medium">Resultados en vivo de las preguntas obligatorias de la Trivia (Salud Mental y Género).</p>
                         
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                            <!-- PREGUNTA 1 -->
                             <div class="bg-stone-50 p-6 rounded-3xl border border-stone-200 flex flex-col h-full">
                                 <h3 class="font-bold text-stone-800 text-sm md:text-base mb-6 h-16">P1: ¿Crees que existen deportes de "hombres" y deportes de "mujeres"?</h3>
                                 <div class="flex-1 min-h-[250px] relative">
@@ -307,7 +306,6 @@
                                 <div id="stats-q1" class="mt-6 pt-4 border-t border-stone-200"></div>
                             </div>
 
-                            <!-- PREGUNTA 2 -->
                             <div class="bg-stone-50 p-6 rounded-3xl border border-stone-200 flex flex-col h-full">
                                 <h3 class="font-bold text-stone-800 text-sm md:text-base mb-6 h-16">P2: ¿Crees que niñas y niños cuentan con la misma posibilidad de acceder al deporte?</h3>
                                 <div class="flex-1 min-h-[250px] relative">
@@ -439,6 +437,7 @@
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Ranking</span>
             </button>
 
+            <!-- BOTÓN STAFF -->
             <button onclick="handleStaffTab()" id="tab-panel-control" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-stone-400 hover:text-stone-700 hover:bg-stone-50 transition-all">
                 <span class="text-2xl md:text-3xl leading-none">🔑</span>
                 <span class="text-[10px] md:text-xs font-black uppercase tracking-tight">Staff</span>
@@ -456,7 +455,7 @@
         window.chartInstanceQ1 = null;
         window.chartInstanceQ2 = null;
 
-        // --- PROFANITY FILTER (FILTRO DE LENGUAJE INAPROPIADO) ---
+        // --- PROFANITY FILTER EXTREMO (FILTRO DE LENGUAJE INAPROPIADO) ---
         window.showToastError = (msg) => {
             const toast = document.getElementById('toast-error');
             if(toast) {
@@ -472,28 +471,88 @@
 
         window.hasProfanity = (text) => {
             if(!text) return false;
-            const normalized = text.toLowerCase();
-            const noSpaces = normalized.replace(/[^a-zñ]/g, ""); 
             
-            // Diccionario de bloqueo de palabras o frases ofensivas solicitadas por el usuario y similares
-            const wordsToCheck = [
-                "puta", "trolo", "trola", "elber galarga", "pija", "garcha", "michotitogordocabezon", 
-                "puto", "concha", "mierda", "pelotudo", "boludo", "mogolico", "tarado", "forro", "choto", "cajeta"
+            // 1. Normalizar texto (elimina tildes y pasa a minúsculas)
+            let normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            // 2. Leetspeak: reemplazar símbolos usados como letras
+            normalized = normalized.replace(/[4@]/g, 'a')
+                                   .replace(/[3]/g, 'e')
+                                   .replace(/[1!¡l]/g, 'i')
+                                   .replace(/[0]/g, 'o')
+                                   .replace(/[5$]/g, 's')
+                                   .replace(/[7\+]/g, 't')
+                                   .replace(/v/g, 'u'); 
+                                   
+            // 3. Crear tres versiones del texto para atrapar todo
+            const cleanSpaced = normalized.replace(/[^a-zñ\s]/g, " ").replace(/\s+/g, " "); // Puntuación se vuelve espacio
+            const textNoPunct = normalized.replace(/[^a-zñ\s]/g, "").replace(/\s+/g, " "); // Puntuación se elimina, espacios se mantienen
+            const collapsed = normalized.replace(/[^a-zñ]/g, ""); // Todo unido, sin espacios ni puntuación
+            
+            // Diccionario principal
+            const exactWords = [
+                "puta", "puto", "putas", "putos", "putita", "putito", "puton", "putazo", "reputa", "reputo",
+                "trolo", "trola", "trolos", "trolas", "trolazo", "trolita",
+                "pija", "pijas", "pijazo", "pijita",
+                "garcha", "garchas", "garchar", "garchando",
+                "concha", "conchas", "conchuda", "conchudo",
+                "mierda", "mierdas",
+                "pelotudo", "pelotuda", "pelotudos", "pelotudas",
+                "boludo", "boluda", "boludos", "boludas",
+                "mogolico", "mogolica", "mogolicos", "mogolicas",
+                "tarado", "tarada", "tarados", "taradas",
+                "forro", "forra", "forros", "forras",
+                "choto", "chota", "chotos", "chotas",
+                "cajeta", "cajetas",
+                "verga", "vergas", "vergazo",
+                "pito", "pitos", "pitito",
+                "pajera", "pajero", "pajeras", "pajeros",
+                "putañero"
             ];
+
+            // Frases largas que bloquean directamente
+            const bannedPhrases = [
+                "elber galarga", "elbergalarga", 
+                "michotito", "gordocabezon", "gordo cabezon",
+                "chupala", "chupa la", "chupame", 
+                "cara de verga", "hijo de puta", "hija de puta", "la concha de",
+                "mama huevo", "mamahuevos"
+            ];
+
+            // A) Función que busca la palabra exacta o con letras repetidas (ej: puuutaaaa -> puta)
+            const checkExact = (wordArray) => {
+                for (let word of wordArray) {
+                    if (exactWords.includes(word) || exactWords.includes(word.replace(/(.)\1+/g, "$1"))) return true;
+                }
+                return false;
+            };
             
-            for (let word of wordsToCheck) {
-                // Chequeo de palabra exacta
-                const regex = new RegExp(`\\b${word}\\b`, 'i');
-                if (regex.test(normalized)) return true;
-                
-                // Chequeo especial para las frases/bromas largas sin espacios (ej: elbergalarga)
-                const wordJoined = word.replace(/\s+/g, "");
-                if (wordJoined.length > 5 && noSpaces.includes(wordJoined)) return true;
-                
-                // Chequeo forzado para palabras puntuales que nunca deberían pasar aunque estén unidas a otras letras
-                if (["elber galarga", "michotitogordocabezon", "garcha", "pija"].some(w => normalized.includes(w) || noSpaces.includes(w.replace(/\s+/g, "")))) return true;
+            // Revisa si las palabras aisladas son malas
+            if (checkExact(cleanSpaced.split(" "))) return true; 
+            if (checkExact(textNoPunct.split(" "))) return true; 
+
+            // B) Revisar las frases compuestas completas
+            for (let phrase of bannedPhrases) {
+                if (cleanSpaced.includes(phrase) || collapsed.includes(phrase.replace(/\s+/g, ""))) return true;
             }
-            return false;
+
+            // C) El filtro anti espacios: Atrapa groserias separadas intencionalmente (ej: p u t a, p_u.t.a)
+            const spacedToxicRegex = /(^|\s)(p\s*u\s*t\s*[oas]|p\s*i\s*j\s*a|g\s*a\s*r\s*c\s*h\s*a|c\s*o\s*n\s*c\s*h\s*a|t\s*r\s*o\s*l\s*[oas]|m\s*i\s*e\s*r\s*d\s*a|v\s*e\s*r\s*g\s*a)(\s|$)/;
+            if (spacedToxicRegex.test(cleanSpaced)) return true;
+
+            // D) Identificadores tóxicos (estos son tan específicos que si están en el texto colapsado, es seguro bloquearlos)
+            const toxicSequences = [
+                "elbergalarga", "michotit", "gordocabezon", "hdeputa", "laconchade", 
+                "chupala", "pelotud", "mogolic", "conchud", "trolaz", "putaz"
+            ];
+            for (let seq of toxicSequences) {
+                if (collapsed.includes(seq)) return true;
+            }
+
+            // E) Si TODO el string (quitando todos los espacios y símbolos) es solo la grosería
+            if (exactWords.includes(collapsed) || exactWords.includes(collapsed.replace(/(.)\1+/g, "$1"))) return true;
+
+            return false; // El texto está limpio
         };
 
         window.checkText = (text) => {
@@ -843,8 +902,8 @@
         window.sorteoTabInterval = null;
         window.iniciarSorteoTab = () => {
             if(!window.allResultsData || window.allResultsData.length === 0) {
-                const err = document.getElementById('sorteo-tab-error');
-                err.classList.remove('hide'); setTimeout(() => err.classList.add('hide'), 3000); return;
+                window.showToastError("¡No hay participantes en el ranking aún!");
+                return;
             }
             const nameDisplay = document.getElementById('sorteo-name-tab');
             nameDisplay.classList.add('animate-roulette', 'text-stone-400');
