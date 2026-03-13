@@ -61,8 +61,8 @@
     <!-- PORTADA DE INICIO (SPLASH SCREEN) - DURA 2 SEGUNDOS                       -->
     <!-- ========================================================================= -->
     <div id="splash-screen" class="fixed inset-0 z-[500] bg-[#e8e4f7] flex items-center justify-center transition-opacity duration-500">
-        <!-- MODIFICADO: object-contain para asegurar que la imagen se vea completa en el celular sin recortarse -->
-        <img src="PORTADA.jpg" alt="Bienvenidos al Stream" class="w-full h-full object-contain max-w-xl mx-auto" onerror="this.style.display='none'">
+        <!-- object-contain y padding aseguran que no se corte en los bordes del celular -->
+        <img src="PORTADA.jpg" alt="Bienvenidos al Stream" class="w-full h-full object-contain p-4 md:p-8" onerror="this.style.display='none'">
     </div>
 
     <!-- TOAST DE ALERTA -->
@@ -70,12 +70,12 @@
         Mensaje de alerta
     </div>
 
-    <!-- ALERTA DE TRIVIA OBLIGATORIA (NUEVA) -->
+    <!-- ALERTA DE TRIVIA OBLIGATORIA -->
     <div id="trivia-alert" class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl text-center max-w-md transform scale-95 transition-transform duration-300 border-4 border-purple-300" id="trivia-alert-box">
             <span class="text-7xl mb-4 block animate-bounce">🎁</span>
             <h3 class="text-3xl md:text-4xl font-black text-purple-800 leading-tight mb-2">CONTESTÁ LA TRIVIA</h3>
-            <p class="text-stone-600 font-bold mt-2 text-sm md:text-base uppercase tracking-wider">Y poné tus datos (Nombre y Apellido) para participar de los sorteos.</p>
+            <p class="text-stone-600 font-bold mt-2 text-sm md:text-base uppercase tracking-wider">Y poné tus datos (Nombre, Apellido y últimos 3 números de DNI) para participar de los sorteos.</p>
         </div>
     </div>
 
@@ -103,14 +103,13 @@
             const splashScreen = document.getElementById('splash-screen');
             if (splashScreen) {
                 setTimeout(() => {
-                    splashScreen.style.opacity = '0'; // Se desvanece
+                    splashScreen.style.opacity = '0';
                     setTimeout(() => {
-                        splashScreen.classList.add('hide'); // Se quita del medio para poder hacer clic
-                    }, 500); // 500ms de animación
-                }, 2000); // Espera 2 segundos exactos
+                        splashScreen.classList.add('hide'); 
+                    }, 500); 
+                }, 2000); 
             }
 
-            // Advertencia local si no está en Vercel
             setTimeout(function() { 
                 const warn = document.getElementById('local-warning');
                 if (warn && typeof window.safeSwitchView === 'undefined') warn.classList.remove('hide'); 
@@ -189,7 +188,6 @@
                 <div class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-[3rem] shadow-xl border border-white mb-4 max-w-4xl mx-auto w-full">
                     <div class="mb-6 md:mb-8 text-center md:text-left">
                         <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Subí tu Foto</h2>
-                        <!-- MODIFICADO -->
                         <p class="text-sm md:text-base text-stone-500 font-medium">Compartí el Torneo con Nosotros y aparece en nuestro Stream.</p>
                     </div>
                     
@@ -198,7 +196,6 @@
                             <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-purple-600 transition-colors">
                                 <span class="text-5xl md:text-6xl mb-3 transition-transform group-hover:scale-110">📸</span>
-                                <!-- MODIFICADO -->
                                 <p class="font-black text-xs md:text-sm uppercase tracking-widest">Aquí podés tomar tu foto</p>
                             </div>
                             <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
@@ -208,10 +205,8 @@
                             <div class="grid grid-cols-1 gap-4">
                                 <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-purple-500 border border-stone-100">
                             </div>
-                            <!-- MODIFICADO placeholder -->
                             <textarea id="texto-mensaje" rows="4" required placeholder="Escribí tu mensaje..." class="flex-1 w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
                             
-                            <!-- MODIFICADO botón enviar -->
                             <button type="submit" id="submit-btn" class="w-full py-4 md:py-5 bg-stone-900 text-white rounded-2xl font-black text-sm md:text-lg tracking-wide shadow-2xl hover:bg-black active:scale-95 transition mt-auto">
                                 ENVIAR 📸
                             </button>
@@ -221,7 +216,7 @@
             </div>
         </section>
 
-        <!-- VISTA 3: TRIVIA (MODIFICADA CON ENCUESTA OBLIGATORIA) -->
+        <!-- VISTA 3: TRIVIA -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="max-w-3xl mx-auto w-full">
@@ -237,28 +232,34 @@
                     <div id="trivia-start" class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white text-center relative">
                         <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4 bg-purple-50 inline-block px-5 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
                         
-                        <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 mb-5 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
+                        <div class="flex flex-col gap-3 mb-5">
+                            <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
+                            <!-- CAMPO DNI NUEVO -->
+                            <input type="tel" id="player-dni" placeholder="Últimos 3 números de DNI" maxlength="3" pattern="[0-9]*" inputmode="numeric" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
+                        </div>
+
                         <button onclick="startTrivia()" class="w-full py-4 md:py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
                     </div>
 
-                    <!-- Pantalla de Preguntas (Dinámica) -->
-                    <div id="trivia-quiz" class="hide">
+                    <!-- Pantalla de Preguntas -->
+                    <div id="trivia-quiz" class="hide w-full">
                         <div class="flex justify-between items-center mb-4 px-4">
                             <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase bg-purple-100 px-4 py-2 rounded-full">Pregunta 1/10</span>
                             <span id="quiz-score" class="text-xs md:text-sm font-black text-emerald-700 uppercase bg-emerald-100 px-4 py-2 rounded-full">Puntos: 0</span>
                         </div>
-                        <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[200px] flex items-center justify-center text-center">
-                            <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800">¿Pregunta aquí?</p>
+                        <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[250px] flex flex-col items-center justify-center text-center">
+                            <!-- IMAGEN PARA ESCUDOS -->
+                            <img id="question-image" src="" alt="Escudo" class="h-32 md:h-40 object-contain mb-4 hide rounded-xl">
+                            <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800 w-full">¿Pregunta aquí?</p>
                         </div>
                         
-                        <!-- Aquí se inyectan los botones (V/F o de Múltiple Opción) -->
                         <div id="dynamic-answers" class="w-full"></div>
                     </div>
 
                     <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-8 bg-white/90 backdrop-blur-md rounded-[3rem] shadow-xl border border-white mt-6 p-8">
                         <h3 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-800">¡Finalizado! 🎉</h3>
-                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje y tus respuestas fueron guardados.</p>
+                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje fue enviado a revisión para aparecer en el ranking.</p>
                         <div class="bg-stone-50 p-6 md:p-8 rounded-[2.5rem] border border-stone-100 shadow-inner inline-block px-10 md:px-16 mb-8 w-full md:w-auto">
                             <p class="text-xs md:text-sm font-bold text-stone-400 uppercase mb-2 tracking-widest">Puntaje Obtenido</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
@@ -272,7 +273,7 @@
             </div>
         </section>
 
-        <!-- VISTA 4: RANKING (TÍTULO CORREGIDO) -->
+        <!-- VISTA 4: RANKING -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-5xl mx-auto w-full">
@@ -318,7 +319,7 @@
             </div>
         </section>
         
-        <!-- VISTA 9: ESTADÍSTICAS (NUEVA PESTAÑA) -->
+        <!-- VISTA 9: ESTADÍSTICAS -->
         <section id="view-estadisticas" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-6xl mx-auto w-full">
@@ -486,7 +487,7 @@
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES) -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
     <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe">
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
@@ -672,7 +673,7 @@
                 if(tQuiz) tQuiz.classList.add('hide');
                 if(tEnd) tEnd.classList.add('hide');
 
-                // Mostrar Alerta de Trivia (NUEVO)
+                // Lógica del cartel obligatorio de Trivia
                 const alertEl = document.getElementById('trivia-alert');
                 const alertBox = document.getElementById('trivia-alert-box');
                 if (alertEl && alertBox) {
@@ -685,7 +686,7 @@
                         alertEl.classList.add('opacity-0', 'pointer-events-none');
                         alertBox.classList.remove('scale-100');
                         alertBox.classList.add('scale-95');
-                    }, 3000);
+                    }, 3000); // Se oculta a los 3 segundos
                 }
             }
 
@@ -774,7 +775,7 @@
         };
 
         // ==========================================
-        // LÓGICA DE TRIVIA (CON ENCUESTAS)
+        // LÓGICA DE TRIVIA (CON ENCUESTAS Y ESCUDOS)
         // ==========================================
         window.currentQuestion = 0; 
         window.score = 0; 
@@ -795,6 +796,34 @@
                 text: '¿Crees que tanto niñas y niños cuentan con la misma posibilidad de acceder a las mismas actividades deportivas desde la temprana infancia?',
                 options: ['Depende de los padres', 'Depende de lo que quiera niño/a todos pueden elegir por igual', 'No cuentan con las mismas posibilidades'],
                 isSurvey: true
+            }
+        ];
+
+        // Preguntas especiales de Escudos
+        const escudosPreguntas = [
+            {
+                id: 'escudo1',
+                text: '¿A qué club de fútbol de la cuenca pertenece este escudo?',
+                image: 'ESCUDO1.jpg',
+                options: ['CLUB ATLETICO LA ACADEMIA', 'CLUB ATLETICO TALLERES', 'MINA 3'],
+                ans: 'CLUB ATLETICO TALLERES',
+                isMultipleChoice: true
+            },
+            {
+                id: 'escudo2',
+                text: '¿A qué club de fútbol de la cuenca pertenece este escudo?',
+                image: 'ESCUDO2.jpg',
+                options: ['LAS PIBAS', 'LAS ÑERI', 'LAS CHINAS'],
+                ans: 'LAS CHINAS',
+                isMultipleChoice: true
+            },
+            {
+                id: 'escudo3',
+                text: '¿A qué club de fútbol de la cuenca pertenece este escudo?',
+                image: 'ESCUDO3.jpg',
+                options: ['LOS PUMAS', 'CLUB UNION', 'LOS TIGRES'],
+                ans: 'LOS TIGRES',
+                isMultipleChoice: true
             }
         ];
 
@@ -867,20 +896,35 @@
             }
 
             const nameInput = document.getElementById('player-name');
+            const dniInput = document.getElementById('player-dni');
+
             if(!nameInput.value.trim()) {
                 window.showToastError("¡Ingresá tu nombre para jugar!");
                 return;
             }
 
             if(!window.checkText(nameInput.value.trim())) return; 
+
+            // Validación estricta del DNI (3 números exactos)
+            const dniVal = dniInput.value.trim();
+            if(!dniVal || !/^\d{3}$/.test(dniVal)) {
+                window.showToastError("¡Por favor, ingresá los últimos 3 números de tu DNI!");
+                return;
+            }
             
-            window.playerName = nameInput.value.trim();
+            // Juntamos el Nombre con el DNI
+            window.playerName = nameInput.value.trim() + " (DNI: " + dniVal + ")";
+
             document.getElementById('trivia-start').classList.add('hide');
             document.getElementById('trivia-quiz').classList.remove('hide');
             
             window.surveyAnswers = {}; 
-            const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 8); 
-            window.selectedQuestions = [...encuestasObligatorias, ...randomQuestions]; 
+            
+            // Lógica para elegir escudo al azar y armar las 10 preguntas
+            const randomEscudo = escudosPreguntas[Math.floor(Math.random() * escudosPreguntas.length)];
+            const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 7); 
+            
+            window.selectedQuestions = [...encuestasObligatorias, randomEscudo, ...randomQuestions]; 
             
             window.currentQuestion = 0; 
             window.score = 0;
@@ -894,14 +938,23 @@
             document.getElementById('quiz-progress').textContent = `Pregunta ${window.currentQuestion + 1}/${window.selectedQuestions.length}`;
             document.getElementById('question-text').textContent = q.text;
             
+            // Manejo de la imagen para el Escudo
+            const qImage = document.getElementById('question-image');
+            if (q.image) {
+                qImage.src = q.image;
+                qImage.classList.remove('hide');
+            } else {
+                qImage.classList.add('hide');
+            }
+
             const answersContainer = document.getElementById('dynamic-answers');
             answersContainer.innerHTML = ''; 
 
-            if (q.isSurvey) {
+            if (q.isSurvey || q.isMultipleChoice) {
                 answersContainer.className = "grid grid-cols-1 gap-3 w-full";
                 q.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "py-4 md:py-5 bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-[1.5rem] font-bold md:text-lg shadow-sm active:scale-95 transition transform hover:-translate-y-1 w-full";
+                    btn.className = "py-4 md:py-5 bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-[1.5rem] font-bold md:text-lg shadow-sm active:scale-95 transition transform hover:-translate-y-1 w-full text-balance leading-tight px-4";
                     btn.textContent = opt;
                     btn.onclick = () => window.checkAnswer(opt);
                     answersContainer.appendChild(btn);
@@ -925,6 +978,12 @@
                 window.surveyAnswers[q.id] = userAns;
                 window.score += 100; 
                 document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+            } else if (q.isMultipleChoice) {
+                if(userAns === q.ans) {
+                    let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
+                    window.score += (100 + speedBonus);
+                    document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+                }
             } else {
                 if(userAns === q.ans) {
                     let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
