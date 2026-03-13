@@ -247,10 +247,10 @@
                             <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase bg-purple-100 px-4 py-2 rounded-full">Pregunta 1/10</span>
                             <span id="quiz-score" class="text-xs md:text-sm font-black text-emerald-700 uppercase bg-emerald-100 px-4 py-2 rounded-full">Puntos: 0</span>
                         </div>
-                        <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[250px] flex flex-col items-center justify-center text-center">
+                        <div class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white mb-6 min-h-[180px] md:min-h-[250px] flex flex-col items-center justify-center text-center transition-all">
                             <!-- IMAGEN PARA ESCUDOS -->
                             <img id="question-image" src="" alt="Escudo" class="h-32 md:h-40 object-contain mb-4 hide rounded-xl">
-                            <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800 w-full">¿Pregunta aquí?</p>
+                            <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800 w-full transition-all">¿Pregunta aquí?</p>
                         </div>
                         
                         <div id="dynamic-answers" class="w-full"></div>
@@ -783,6 +783,7 @@
         window.selectedQuestions = []; 
         window.questionStartTime = 0;
         window.surveyAnswers = {}; 
+        window.isAnswering = false;
         
         const encuestasObligatorias = [
             {
@@ -905,14 +906,12 @@
 
             if(!window.checkText(nameInput.value.trim())) return; 
 
-            // Validación estricta del DNI (3 números exactos)
             const dniVal = dniInput.value.trim();
             if(!dniVal || !/^\d{3}$/.test(dniVal)) {
                 window.showToastError("¡Por favor, ingresá los últimos 3 números de tu DNI!");
                 return;
             }
             
-            // Juntamos el Nombre con el DNI
             window.playerName = nameInput.value.trim() + " (DNI: " + dniVal + ")";
 
             document.getElementById('trivia-start').classList.add('hide');
@@ -920,7 +919,6 @@
             
             window.surveyAnswers = {}; 
             
-            // Lógica para elegir escudo al azar y armar las 10 preguntas
             const randomEscudo = escudosPreguntas[Math.floor(Math.random() * escudosPreguntas.length)];
             const randomQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 7); 
             
@@ -938,7 +936,6 @@
             document.getElementById('quiz-progress').textContent = `Pregunta ${window.currentQuestion + 1}/${window.selectedQuestions.length}`;
             document.getElementById('question-text').textContent = q.text;
             
-            // Manejo de la imagen para el Escudo
             const qImage = document.getElementById('question-image');
             if (q.image) {
                 qImage.src = q.image;
@@ -952,47 +949,67 @@
 
             if (q.isSurvey || q.isMultipleChoice) {
                 answersContainer.className = "grid grid-cols-1 gap-3 w-full";
-                q.options.forEach(opt => {
+                const opcionesMezcladas = [...q.options].sort(() => 0.5 - Math.random());
+                opcionesMezcladas.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "py-4 md:py-5 bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-[1.5rem] font-bold md:text-lg shadow-sm active:scale-95 transition transform hover:-translate-y-1 w-full text-balance leading-tight px-4";
+                    btn.className = "trivia-btn py-4 md:py-5 bg-purple-100 hover:bg-purple-200 text-purple-900 border-2 border-purple-300 rounded-[1.5rem] font-bold md:text-lg shadow-sm active:scale-95 transition transform hover:-translate-y-1 w-full text-balance leading-tight px-4";
                     btn.textContent = opt;
-                    btn.onclick = () => window.checkAnswer(opt);
+                    btn.onclick = (e) => window.checkAnswer(opt, e.target);
                     answersContainer.appendChild(btn);
                 });
             } else {
                 answersContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4 w-full";
                 answersContainer.innerHTML = `
-                    <button onclick="checkAnswer(true)" class="py-5 md:py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">✅ VERDADERO</button>
-                    <button onclick="checkAnswer(false)" class="py-5 md:py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1">❌ FALSO</button>
+                    <button onclick="window.checkAnswer(true, this)" class="trivia-btn py-5 md:py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1 w-full">VERDADERO</button>
+                    <button onclick="window.checkAnswer(false, this)" class="trivia-btn py-5 md:py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-xl shadow-lg active:scale-95 transition transform hover:-translate-y-1 w-full">FALSO</button>
                 `;
             }
 
             window.questionStartTime = Date.now(); 
+            window.isAnswering = false;
         };
 
-        window.checkAnswer = (userAns) => {
+        window.checkAnswer = (userAns, btnElement) => {
+            if (window.isAnswering) return; 
+            window.isAnswering = true;
+            
             const timeTaken = Date.now() - window.questionStartTime;
             const q = window.selectedQuestions[window.currentQuestion];
             
+            // Bloqueamos botones temporalmente
+            document.querySelectorAll('.trivia-btn').forEach(btn => btn.style.pointerEvents = 'none');
+
             if (q.isSurvey) {
                 window.surveyAnswers[q.id] = userAns;
                 window.score += 100; 
                 document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
-            } else if (q.isMultipleChoice) {
-                if(userAns === q.ans) {
-                    let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
-                    window.score += (100 + speedBonus);
-                    document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
-                }
+                if(btnElement) btnElement.classList.replace('bg-purple-100', 'bg-purple-300');
+                
+                setTimeout(() => {
+                    window.currentQuestion++; window.showQuestion();
+                }, 300);
             } else {
-                if(userAns === q.ans) {
+                let isCorrect = (userAns === q.ans);
+                
+                if(btnElement) {
+                    btnElement.classList.remove('hover:-translate-y-1', 'active:scale-95', 'hover:bg-emerald-600', 'hover:bg-rose-600', 'hover:bg-purple-200');
+                }
+
+                if(isCorrect) {
                     let speedBonus = Math.max(0, Math.floor(50 - (timeTaken / 250)));
                     window.score += (100 + speedBonus);
                     document.getElementById('quiz-score').textContent = `Puntos: ${window.score}`;
+                    if(btnElement) btnElement.className = "py-4 md:py-5 bg-emerald-500 text-white rounded-[1.5rem] font-black md:text-lg shadow-md w-full transition-all";
+                    document.getElementById('question-text').innerHTML = "<span class='text-emerald-600 text-2xl md:text-4xl block mb-2 font-black'>¡CORRECTO! 🎉</span>" + q.text;
+                } else {
+                    if(btnElement) btnElement.className = "py-4 md:py-5 bg-rose-500 text-white rounded-[1.5rem] font-black md:text-lg shadow-md w-full transition-all";
+                    document.getElementById('question-text').innerHTML = "<span class='text-rose-600 text-2xl md:text-4xl block mb-2 font-black'>¡INCORRECTO! ❌</span>" + q.text;
                 }
+                
+                setTimeout(() => {
+                    window.currentQuestion++; window.showQuestion();
+                }, 1200);
             }
-            
-            window.currentQuestion++; window.showQuestion();
         };
 
         window.finishTrivia = () => {
@@ -1163,7 +1180,7 @@
                 score: window.score, 
                 timestamp: Date.now(),
                 userId: currentUser.uid,
-                approved: false 
+                approved: false // REQUIERE APROBACION MANUAL
             });
 
             window.showToastError("¡Enviado a revisión! En breve aparecerás en el ranking.");
