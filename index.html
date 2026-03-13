@@ -69,6 +69,15 @@
         Mensaje de alerta
     </div>
 
+    <!-- ALERTA DE TRIVIA OBLIGATORIA (NUEVA) -->
+    <div id="trivia-alert" class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl text-center max-w-md transform scale-95 transition-transform duration-300 border-4 border-purple-300" id="trivia-alert-box">
+            <span class="text-7xl mb-4 block animate-bounce">🎁</span>
+            <h3 class="text-3xl md:text-4xl font-black text-purple-800 leading-tight mb-2">CONTESTÁ LA TRIVIA</h3>
+            <p class="text-stone-600 font-bold mt-2 text-sm md:text-base uppercase tracking-wider">Y poné tus datos (Nombre y Apellido) para participar de los sorteos.</p>
+        </div>
+    </div>
+
     <!-- PANTALLA DE TRANSICIÓN ANIMADA -->
     <div id="transition-overlay" class="fixed inset-0 bg-[#f8f7f4]/95 backdrop-blur-md z-[300] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
         <div class="relative flex items-center justify-center">
@@ -179,7 +188,7 @@
                 <div class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-[3rem] shadow-xl border border-white mb-4 max-w-4xl mx-auto w-full">
                     <div class="mb-6 md:mb-8 text-center md:text-left">
                         <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Subí tu Foto</h2>
-                        <p class="text-sm md:text-base text-stone-500 font-medium">Sacate una selfie, dejá un mensaje de aliento y compartilo con la comunidad.</p>
+                        <p class="text-sm md:text-base text-stone-500 font-medium">Compartí el Torneo con Nosotros y aparece en nuestro Stream.</p>
                     </div>
                     
                     <form id="pase-form" class="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8">
@@ -193,9 +202,8 @@
                         </div>
 
                         <div class="flex flex-col gap-4">
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4">
                                 <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-purple-500 border border-stone-100">
-                                <input type="text" id="receiver" placeholder="Para quién" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-emerald-500 border border-stone-100">
                             </div>
                             <textarea id="texto-mensaje" rows="4" required placeholder="Tu mensaje de aliento..." class="flex-1 w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
                             
@@ -655,6 +663,22 @@
                 if(tStart) tStart.classList.remove('hide');
                 if(tQuiz) tQuiz.classList.add('hide');
                 if(tEnd) tEnd.classList.add('hide');
+
+                // Mostrar Alerta de Trivia (NUEVO)
+                const alertEl = document.getElementById('trivia-alert');
+                const alertBox = document.getElementById('trivia-alert-box');
+                if (alertEl && alertBox) {
+                    alertEl.classList.remove('pointer-events-none', 'opacity-0');
+                    alertEl.classList.add('opacity-100');
+                    alertBox.classList.remove('scale-95');
+                    alertBox.classList.add('scale-100');
+                    setTimeout(() => {
+                        alertEl.classList.remove('opacity-100');
+                        alertEl.classList.add('opacity-0', 'pointer-events-none');
+                        alertBox.classList.remove('scale-100');
+                        alertBox.classList.add('scale-95');
+                    }, 3000);
+                }
             }
 
             const overlay = document.getElementById('transition-overlay');
@@ -1221,7 +1245,7 @@
                     <div class="flex gap-3 items-center">
                         ${img}
                         <div class="flex-1 overflow-hidden">
-                            <p class="font-bold text-xs text-purple-800 truncate">${data.sender} ▶ ${data.receiver}</p>
+                            <p class="font-bold text-xs text-purple-800 truncate">${data.sender}</p>
                             <p class="text-stone-600 text-xs italic truncate">"${data.mensaje || 'Solo foto sin texto'}"</p>
                         </div>
                     </div>
@@ -1332,8 +1356,6 @@
                 <div class="p-5 md:p-6">
                     <div class="flex items-center gap-2 mb-3 text-xs md:text-sm">
                         <span class="font-black text-purple-900 uppercase tracking-tighter">${p.sender}</span>
-                        <span class="text-emerald-500 text-[8px] md:text-[10px] font-black">▶</span>
-                        <span class="font-black text-emerald-800 uppercase tracking-tighter">${p.receiver}</span>
                     </div>
                     ${p.mensaje ? `<p class="text-stone-600 text-sm md:text-base italic font-medium leading-relaxed mb-4">"${p.mensaje}"</p>` : ''}
                     
@@ -1392,10 +1414,9 @@
             }
 
             const senderVal = document.getElementById('sender').value.trim();
-            const recVal = document.getElementById('receiver').value.trim();
             const msgVal = document.getElementById('texto-mensaje').value.trim();
 
-            if(!window.checkText(senderVal) || !window.checkText(recVal) || !window.checkText(msgVal)) {
+            if(!window.checkText(senderVal) || !window.checkText(msgVal)) {
                 return; 
             }
 
@@ -1405,7 +1426,6 @@
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pases_en_vivo'), {
                     sender: senderVal || 'Anónimo',
-                    receiver: recVal || 'Alguien',
                     mensaje: msgVal,
                     imagen: currentImgBase64,
                     likes: 0,
