@@ -61,7 +61,8 @@
     <!-- PORTADA DE INICIO (SPLASH SCREEN) - DURA 2 SEGUNDOS                       -->
     <!-- ========================================================================= -->
     <div id="splash-screen" class="fixed inset-0 z-[500] bg-[#e8e4f7] flex items-center justify-center transition-opacity duration-500">
-        <img src="PORTADA.jpg" alt="Bienvenidos al Stream" class="w-full h-full object-cover md:object-contain" onerror="this.style.display='none'">
+        <!-- MODIFICADO: object-contain para asegurar que la imagen se vea completa en el celular sin recortarse -->
+        <img src="PORTADA.jpg" alt="Bienvenidos al Stream" class="w-full h-full object-contain max-w-xl mx-auto" onerror="this.style.display='none'">
     </div>
 
     <!-- TOAST DE ALERTA -->
@@ -188,6 +189,7 @@
                 <div class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-[3rem] shadow-xl border border-white mb-4 max-w-4xl mx-auto w-full">
                     <div class="mb-6 md:mb-8 text-center md:text-left">
                         <h2 class="text-3xl md:text-4xl font-brand italic mb-2 text-stone-900 leading-none">Subí tu Foto</h2>
+                        <!-- MODIFICADO -->
                         <p class="text-sm md:text-base text-stone-500 font-medium">Compartí el Torneo con Nosotros y aparece en nuestro Stream.</p>
                     </div>
                     
@@ -196,7 +198,8 @@
                             <input type="file" id="foto-input" accept="image/*" capture="user" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <div id="placeholder-ui" class="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-purple-600 transition-colors">
                                 <span class="text-5xl md:text-6xl mb-3 transition-transform group-hover:scale-110">📸</span>
-                                <p class="font-black text-xs md:text-sm uppercase tracking-widest">Tomar Foto (Obligatorio)</p>
+                                <!-- MODIFICADO -->
+                                <p class="font-black text-xs md:text-sm uppercase tracking-widest">Aquí podés tomar tu foto</p>
                             </div>
                             <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hide">
                         </div>
@@ -205,10 +208,12 @@
                             <div class="grid grid-cols-1 gap-4">
                                 <input type="text" id="sender" placeholder="Tu nombre" required class="w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-bold outline-none focus:ring-2 focus:ring-purple-500 border border-stone-100">
                             </div>
-                            <textarea id="texto-mensaje" rows="4" required placeholder="Tu mensaje de aliento..." class="flex-1 w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
+                            <!-- MODIFICADO placeholder -->
+                            <textarea id="texto-mensaje" rows="4" required placeholder="Escribí tu mensaje..." class="flex-1 w-full bg-stone-50 px-5 py-4 md:py-4 rounded-2xl text-sm md:text-base font-medium outline-none focus:ring-2 focus:ring-purple-500 resize-none border border-stone-100"></textarea>
                             
+                            <!-- MODIFICADO botón enviar -->
                             <button type="submit" id="submit-btn" class="w-full py-4 md:py-5 bg-stone-900 text-white rounded-2xl font-black text-sm md:text-lg tracking-wide shadow-2xl hover:bg-black active:scale-95 transition mt-auto">
-                                ENVIAR A REVISIÓN 📸
+                                ENVIAR 📸
                             </button>
                         </div>
                     </form>
@@ -216,7 +221,7 @@
             </div>
         </section>
 
-        <!-- VISTA 3: TRIVIA -->
+        <!-- VISTA 3: TRIVIA (MODIFICADA CON ENCUESTA OBLIGATORIA) -->
         <section id="view-trivia" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-center items-center w-full">
                 <div class="max-w-3xl mx-auto w-full">
@@ -228,14 +233,15 @@
                         <p class="text-purple-100 text-sm relative z-10 font-medium">Demostrá tus conocimientos sobre fútbol femenino y salud mental.</p>
                     </div>
 
+                    <!-- Pantalla Inicio -->
                     <div id="trivia-start" class="bg-white/90 backdrop-blur-sm p-6 md:p-10 rounded-[3rem] shadow-xl border border-white text-center relative">
                         <p id="attempts-counter" class="text-sm font-black text-purple-600 uppercase tracking-widest mb-4 bg-purple-50 inline-block px-5 py-2 rounded-full border border-purple-100">Intentos disponibles: 2 de 2</p>
                         
                         <input type="text" id="player-name" placeholder="Tu Nombre y Apellido" class="w-full p-4 md:p-5 rounded-2xl bg-stone-50 mb-5 outline-none focus:ring-2 focus:ring-purple-500 font-bold text-center text-purple-900 text-lg border border-stone-100">
-                        <p id="name-error" class="text-rose-500 font-bold text-sm hide mb-4">¡Ingresá tu nombre para jugar!</p>
                         <button onclick="startTrivia()" class="w-full py-4 md:py-5 bg-purple-700 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-purple-800 active:scale-95 transition">¡EMPEZAR A JUGAR! 🚀</button>
                     </div>
 
+                    <!-- Pantalla de Preguntas (Dinámica) -->
                     <div id="trivia-quiz" class="hide">
                         <div class="flex justify-between items-center mb-4 px-4">
                             <span id="quiz-progress" class="text-xs md:text-sm font-black text-purple-700 uppercase bg-purple-100 px-4 py-2 rounded-full">Pregunta 1/10</span>
@@ -245,12 +251,14 @@
                             <p id="question-text" class="font-bold text-xl md:text-3xl leading-tight text-stone-800">¿Pregunta aquí?</p>
                         </div>
                         
+                        <!-- Aquí se inyectan los botones (V/F o de Múltiple Opción) -->
                         <div id="dynamic-answers" class="w-full"></div>
                     </div>
 
+                    <!-- Pantalla Final -->
                     <div id="trivia-end" class="hide text-center py-8 bg-white/90 backdrop-blur-md rounded-[3rem] shadow-xl border border-white mt-6 p-8">
                         <h3 class="text-4xl md:text-5xl font-brand italic mb-2 text-stone-800">¡Finalizado! 🎉</h3>
-                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje fue enviado a revisión para aparecer en el ranking.</p>
+                        <p class="text-stone-500 text-sm md:text-base mb-6 font-medium">Tu puntaje y tus respuestas fueron guardados.</p>
                         <div class="bg-stone-50 p-6 md:p-8 rounded-[2.5rem] border border-stone-100 shadow-inner inline-block px-10 md:px-16 mb-8 w-full md:w-auto">
                             <p class="text-xs md:text-sm font-bold text-stone-400 uppercase mb-2 tracking-widest">Puntaje Obtenido</p>
                             <p id="final-score" class="text-6xl md:text-7xl font-black text-purple-700 leading-none">0</p>
@@ -264,7 +272,7 @@
             </div>
         </section>
 
-        <!-- VISTA 4: RANKING -->
+        <!-- VISTA 4: RANKING (TÍTULO CORREGIDO) -->
         <section id="view-ranking" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-5xl mx-auto w-full">
@@ -310,7 +318,7 @@
             </div>
         </section>
         
-        <!-- VISTA 9: ESTADÍSTICAS -->
+        <!-- VISTA 9: ESTADÍSTICAS (NUEVA PESTAÑA) -->
         <section id="view-estadisticas" class="animate-view px-5 pb-5 hide">
             <div class="min-h-[70vh] flex flex-col justify-start items-center w-full pt-4 md:pt-8">
                 <div class="max-w-6xl mx-auto w-full">
@@ -478,7 +486,7 @@
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (5 BOTONES) -->
     <nav id="mobile-nav" class="bg-white/90 backdrop-blur-md border-t border-stone-200 nav-shadow z-50 fixed bottom-0 w-full pb-safe">
         <div class="max-w-2xl mx-auto flex justify-between items-center px-3 py-3 w-full">
             <button onclick="switchTab('inicio')" id="tab-inicio" class="nav-btn w-1/5 py-2 md:py-3 flex flex-col items-center justify-center gap-1.5 rounded-2xl text-purple-700 bg-purple-50 transition-all hover:bg-purple-100">
@@ -840,7 +848,7 @@
             { text: "¿El aliento de la hinchada realmente cambia los químicos del cerebro (dopamina) de la jugadora?", ans: true },
             { text: "¿Un partido empatado puede generar más fatiga mental que una derrota por goleada?", ans: true },
             { text: "¿La resiliencia es la capacidad de volver a intentar y adaptarse después de haber fracasado o sufrido?", ans: true },
-            { text: "¿Una buena comunicación gritando a tus compañeras en la cancha reduce el cortisol (hormona del estrés)?", ans: false }, 
+            { text: "¿Una buena communication gritando a tus compañeras en la cancha reduce el cortisol (hormona del estrés)?", ans: false }, 
             { text: "¿Si sos suplente, no necesitás entrenar la mente porque no tenés presión?", ans: false }, 
             { text: "¿La motivación 'extrínseca' (jugar solo por plata o trofeos) a la larga dura menos que el amor genuino al juego?", ans: true },
             { text: "¿El 'Flow' (estar en la zona) es un estado mental donde jugás muy concentrada y en automático?", ans: true },
@@ -1409,7 +1417,7 @@
 
             // VALIDACIÓN: FOTO OBLIGATORIA
             if(!currentImgBase64) {
-                window.showToastError("📸 ¡Es obligatorio subir una foto!");
+                window.showToastError("📸 ¡No olvides agregar la foto para compartir!");
                 return;
             }
 
@@ -1442,7 +1450,7 @@
                     e.target.reset(); currentImgBase64 = null;
                     if (previewImg) previewImg.classList.add('hide');
                     if (placeholderUi) placeholderUi.classList.remove('hide');
-                    if (btn) { btn.disabled = false; btn.textContent = "ENVIAR A REVISIÓN 📸"; }
+                    if (btn) { btn.disabled = false; btn.textContent = "ENVIAR 📸"; }
                     window.switchTab('inicio'); 
                 }, 2000);
             } catch (err) { 
